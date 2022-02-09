@@ -2,8 +2,8 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 
 
-from denoising.learnlets.keras_utils import DynamicSoftThresholding, DynamicHardThresholding
-from denoising.learnlets.learnlet_layers import LearnletAnalysis, LearnletSynthesis, ScalesThreshold
+from mccd.denoising.learnlets.keras_utils import DynamicSoftThresholding, DynamicHardThresholding
+from mccd.denoising.learnlets.learnlet_layers import LearnletAnalysis, LearnletSynthesis, ScalesThreshold
 
 
 class Learnlet(Model):

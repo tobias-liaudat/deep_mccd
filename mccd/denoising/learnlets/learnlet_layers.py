@@ -4,8 +4,8 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.constraints import UnitNorm
 from tensorflow.keras.layers import Layer, Activation, Conv2D, Concatenate
 
-from denoising.learnlets.keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, CheekyDynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
-from denoising.learnlets.wav_utils import get_wavelet_filters_normalisation
+from mccd.denoising.learnlets.keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, CheekyDynamicHardThresholding, FixedPointPooling, FixedPointUpSampling, BiorUpSampling
+from mccd.denoising.learnlets.wav_utils import get_wavelet_filters_normalisation
 
 
 h_filter_bior = [

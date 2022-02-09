@@ -18,7 +18,7 @@ import mccd.utils as utils
 import tensorflow as tf
 from . import saving_unets as unet_model
 from . import saving_learnlets as learnlet_model
-from learning_wavelets.models.learnlet_model import Learnlet
+from mccd.denoising.learnlets.learnlet_model import Learnlet
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
 

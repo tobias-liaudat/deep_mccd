@@ -5,10 +5,10 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 
-from denoising.evaluate import keras_psnr, keras_ssim, center_keras_psnr
-from denoising.learnlets.keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering, CheekyDynamicHardThresholding
-from denoising.learnlets.learnlet_layers import LearnletAnalysis, LearnletSynthesis
-from denoising.learnlets.wav_utils import get_wavelet_filters_normalisation
+from mccd.denoising.evaluate import keras_psnr, keras_ssim, center_keras_psnr
+from mccd.denoising.learnlets.keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering, CheekyDynamicHardThresholding
+from mccd.denoising.learnlets.learnlet_layers import LearnletAnalysis, LearnletSynthesis
+from mccd.denoising.learnlets.wav_utils import get_wavelet_filters_normalisation
 
 
 def learnlet(

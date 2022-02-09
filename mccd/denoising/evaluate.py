@@ -5,7 +5,7 @@ Module description ..
 
 import numpy as np
 import tensorflow as tf
-from denoising.image_utils import trim_padding
+from mccd.denoising.image_utils import trim_padding
 # from learnlets.image_utils import trim_padding
 
 try:
