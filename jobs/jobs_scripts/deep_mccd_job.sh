@@ -13,7 +13,7 @@
 # Set maximum computing time (e.g. 5min)
 #PBS -l walltime=90:00:00
 # Request number of cores
-#PBS -l nodes=n03:ppn=2
+#PBS -l nodes=n03:ppn=2:hasgpu
 
 # Full path to environment
 export SPENV="$HOME/.conda/envs/shapepipe"
@@ -25,8 +25,8 @@ module load intel/19.0/2
 source activate shapepipe
 
 # Run ShapePipe using full paths to executables
-$SPENV/bin/shapepipe_run -c /config_files/deep_mccd.ini
-# python $CONFDIR/generate_datasets.py
+$SPENV/bin/shapepipe_run -c $CONFDIR/config_files/deep_mccd.ini
+
 # Return exit code
 exit 0
 
