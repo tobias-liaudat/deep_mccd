@@ -26,6 +26,7 @@ source activate shapepipe
 
 # Run ShapePipe using full paths to executables
 /home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/config_files/deep_mccd_mid.ini
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/config_files/deep_mccd_high.ini
 
 # Return exit code
 exit 0
