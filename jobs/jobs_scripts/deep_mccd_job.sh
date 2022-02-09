@@ -19,6 +19,8 @@
 export SPENV="$HOME/.conda/envs/shapepipe"
 export CONFDIR="$HOME/github/aziz_repos/deep_mccd/jobs"
 
+module purge
+
 # Activate conda environment
 module load tensorflow/2.4
 module load intel/19.0/2
