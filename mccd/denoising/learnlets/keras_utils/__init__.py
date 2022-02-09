@@ -2,9 +2,11 @@
 # from .pooling import *
 # from .thresholding import *
 # from .normalisation import *
+# from . import *
 
 __all__ = []  # List of submodules
 __all__ += ['image_tboard_cback']
 __all__ += ['pooling']
 __all__ += ['thresholding']
 __all__ += ['normalisation']
+__all__ += ['load_model']
