@@ -25,7 +25,7 @@ module load intel/19.0/2
 source activate shapepipe
 
 # Run ShapePipe using full paths to executables
-python $SPENV/bin/shapepipe_run.py -c $CONFDIR/config_files/deep_mccd.ini
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/config_files/deep_mccd.ini
 
 # Return exit code
 exit 0
