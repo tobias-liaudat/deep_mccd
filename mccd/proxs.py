@@ -194,7 +194,19 @@ class Learnlets(ProximityParent):
 
     def __init__(self, items=None):
         r"""Initialize class attributes."""
-        im_val = tf.convert_to_tensor(np.random.rand(2,51,51,1))
+        self.im_shape = (51,51)
+
+        # Calculate window function for estimating the noise
+        # We couldn't use Galsim to estimate the moments, so we chose to work with the real center of the image (25.5,25.5)
+        # instead of using the real centroid. Also, we use 13 instead of 5*obs_sigma, so that we are sure to cut all the flux
+        # from the star
+        self.noise_window = np.ones(self.im_shape, dtype=bool)
+        for coord_x in range(self.im_shape[0]):
+            for coord_y in range(self.im_shape[1]):
+                if np.sqrt((coord_x - 25.5)**2 + (coord_y - 25.5)**2) <= 13 :
+                    self.noise_window[coord_x, coord_y] = False
+
+        im_val = tf.convert_to_tensor(np.random.rand(2, self.im_shape[0], self.im_shape[1], 1))
         std_val = tf.convert_to_tensor(np.random.rand(2))
         run_params = {
             'denoising_activation': 'dynamic_soft_thresholding',
@@ -214,17 +226,19 @@ class Learnlets(ProximityParent):
             'n_reweights_learn': 1,
             'clip': False,
         }
-        learnlets=Learnlet(**run_params)
-        learnlets.compile(optimizer=Adam(lr=1e-3),
+        learnlets = Learnlet(**run_params)
+        learnlets.compile(
+            optimizer=Adam(lr=1e-3),
             loss='mse',
         )
         learnlets.fit(
             (im_val, std_val),
             im_val,
-            validation_data=((im_val, std_val), im_val),
-            steps_per_epoch=1,
-            epochs=1,
-            batch_size=12,)
+            validation_data = ((im_val, std_val), im_val),
+            steps_per_epoch = 1,
+            epochs = 1,
+            batch_size=12,
+        )
         learnlets.load_weights(learnlet_model.__path__[0] + '/cp.h5')
         self.model = learnlets
         self.noise = None
@@ -237,23 +251,15 @@ class Learnlets(ProximityParent):
 
     def noise_estimator(self, image):
         r"""Estimate the noise level of the image."""
-
-        # Calculate window function for estimating the noise
-        # We couldn't use Galsim to estimate the moments, so we chose to work with the real center of the image (25.5,25.5)
-        # instead of using the real centroid. Also, we use 13 instead of 5*obs_sigma, so that we are sure to cut all the flux
-        # from the star
-        window = np.ones(image.shape, dtype=bool)
-        for coord_x in range(image.shape[0]):
-            for coord_y in range(image.shape[1]):
-                if np.sqrt((coord_x - 25.5)**2 + (coord_y - 25.5)**2) <= 13 :
-                    window[coord_x, coord_y] = False
         # Calculate noise std dev
-        return self.mad(image[window])
+        return self.mad(image[self.noise_window])
 
     def convert_and_pad(self, image):
         r"""Convert images to 64x64x1 shaped tensors to feed the model, using zero-padding."""
-        image = tf.reshape(tf.convert_to_tensor(image),
-                           [np.shape(image)[0], np.shape(image)[1], np.shape(image)[2], 1])
+        image = tf.reshape(
+            tf.convert_to_tensor(image),
+            [np.shape(image)[0], np.shape(image)[1], np.shape(image)[2], 1]
+        )
         # pad = tf.constant([[0,0], [6,7],[6,7], [0,0]])
         # return tf.pad(image, pad, "CONSTANT")
         return image
