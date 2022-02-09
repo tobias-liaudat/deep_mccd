@@ -1,0 +1,3 @@
+include mccd/saving_unets/*.pb
+include mccd/saving_unets/variables/*
+include mccd/saving_learnlets/*.h5
