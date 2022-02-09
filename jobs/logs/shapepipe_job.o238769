@@ -1,0 +1,55 @@
+Agent pid 47702
+which: no fi_info in (/softs/intel/compilers_and_libraries_2019.5.281/linux/bin/intel64:/softs/intel/compilers_and_libraries_2019.5.281/linux/mpi/intel64/bin:/softs/intel/debugger_2019/gdb/intel64:/softs/python/py3mods/tensorflow/2.4.4/bin:/softs/gcc/8.3.0-CentOS7/bin:/softs/cuda/11.1.1_455.32.00/bin:/opt/intel/intelpython3-2020.4-912/intelpython3/bin:/opt/intel/intelpython3-2020.1-893/intelpython3/bin:/opt/intel/intelpython3-2020.1-893/intelpython3/condabin:/usr/torque/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/local/bin:/home/tliaudat/.local/bin:/home/tliaudat/bin)
+Traceback (most recent call last):
+  File "/softs/python/py3mods/tensorflow/2.4.4/numpy/core/__init__.py", line 22, in <module>
+    from . import multiarray
+  File "/softs/python/py3mods/tensorflow/2.4.4/numpy/core/multiarray.py", line 12, in <module>
+    from . import overrides
+  File "/softs/python/py3mods/tensorflow/2.4.4/numpy/core/overrides.py", line 7, in <module>
+    from numpy.core._multiarray_umath import (
+ModuleNotFoundError: No module named 'numpy.core._multiarray_umath'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tliaudat/.conda/envs/shapepipe/bin/shapepipe_run", line 14, in <module>
+    from modopt.interface.errors import catch_error
+  File "/home/tliaudat/.conda/envs/shapepipe/lib/python3.8/site-packages/modopt/__init__.py", line 13, in <module>
+    from modopt.base import *
+  File "/home/tliaudat/.conda/envs/shapepipe/lib/python3.8/site-packages/modopt/base/np_adjust.py", line 12, in <module>
+    import numpy as np
+  File "/softs/python/py3mods/tensorflow/2.4.4/numpy/__init__.py", line 140, in <module>
+    from . import core
+  File "/softs/python/py3mods/tensorflow/2.4.4/numpy/core/__init__.py", line 48, in <module>
+    raise ImportError(msg)
+ImportError: 
+
+IMPORTANT: PLEASE READ THIS FOR ADVICE ON HOW TO SOLVE THIS ISSUE!
+
+Importing the numpy C-extensions failed. This error can happen for
+many reasons, often due to issues with your setup or how NumPy was
+installed.
+
+We have compiled some common reasons and troubleshooting tips at:
+
+    https://numpy.org/devdocs/user/troubleshooting-importerror.html
+
+Please note and check the following:
+
+  * The Python version is: Python3.8 from "/home/tliaudat/.conda/envs/shapepipe/bin/python"
+  * The NumPy version is: "1.19.5"
+
+and make sure that they are the versions you expect.
+Please carefully study the documentation linked above for further help.
+
+Original error was: No module named 'numpy.core._multiarray_umath'
+
+* JOBID: 238769.cmaster
+* USER: tliaudat
+* GROUP: tliaudat
+* JOBNAME: shapepipe_job
+* SESSIONID: 47677
+* RESOURCESLIST: neednodes=n16:ppn=2:hasgpu,nodes=n16:ppn=2:hasgpu,walltime=90:00:00
+* RESOURCESUSED: cput=00:00:00,mem=0kb,vmem=0kb,walltime=00:00:01
+* QUEUE: batch
+* JOB EXIT STATUS: 0
