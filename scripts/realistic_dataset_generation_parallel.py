@@ -8,7 +8,7 @@ from joblib import Parallel, delayed, cpu_count, parallel_backend
 
 # Total number of datasets
 n_procs = 250
-n_cpus = 16
+n_cpus = 8
 
 
 # Print some info

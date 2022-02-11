@@ -13,7 +13,7 @@
 # Set maximum computing time (e.g. 5min)
 #PBS -l walltime=90:00:00
 # Request number of cores
-#PBS -l nodes=n02:ppn=18
+#PBS -l nodes=n02:ppn=12
 
 # Full path to environment
 export SPENV="$HOME/.conda/envs/shapepipe_mccd"
