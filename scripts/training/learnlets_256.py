@@ -9,9 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.optimizers import Adam
 from astropy.io import fits
-from denoising.learnlets.learnlet_model import Learnlet
-from denoising.evaluate import keras_psnr, keras_ssim, center_keras_psnr
-from denoising.preprocessing import eigenPSF_data_gen
+from mccd.denoising.learnlets.learnlet_model import Learnlet
+from mccd.denoising.evaluate import keras_psnr, keras_ssim, center_keras_psnr
+from mccd.denoising.preprocessing import eigenPSF_data_gen
 
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
@@ -21,7 +21,12 @@ session = InteractiveSession(config=config)
 
 print(tf.test.gpu_device_name())
 
-img = fits.open('/n05data/ayed/outputs/eigenpsfs/dataset_eigenpsfs.fits')
+# Paths
+eigenpsf_dataset_path = '/n05data/ayed/outputs/eigenpsfs/dataset_eigenpsfs.fits'
+base_save_path = '/n05data/tliaudat/new_deepmccd/reproduce_aziz_results/trained_nets/learnlets_256/'
+checkpoint_path = 'cp_256.h5'
+
+img = fits.open(eigenpsf_dataset_path)
 img = img[1].data['VIGNETS_NOISELESS']
 img = np.reshape(img, (len(img), 51, 51, 1))
 
@@ -66,7 +71,6 @@ run_params = {
     'clip': False,
 }
 
-checkpoint_path = "/home/ayed/github/denoising/trained_models/saved_learnlets/cp_256.h5"
 
 model=Learnlet(**run_params)
 n_epochs = 1000
@@ -100,9 +104,8 @@ plt.ylabel('Loss value')
 plt.yscale('log')
 plt.xlabel('No. epoch')
 plt.legend(loc="upper left")
-plt.savefig("/home/ayed/github/denoising/trained_models/saved_learnlets/Loss_256.png")
+plt.savefig(base_save_path + 'loss_256.pdf')
 
-with open('/home/ayed/github/denoising/trained_models/saved_learnlets/modelsummary_256.txt', 'w') as f:
+with open(base_save_path + 'modelsummary_256.txt', 'w') as f:
     model.summary(print_fn=lambda x: f.write(x + '\n'))
-
 
