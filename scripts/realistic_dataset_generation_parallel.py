@@ -7,8 +7,8 @@ from joblib import Parallel, delayed, cpu_count, parallel_backend
 
 
 # Total number of datasets
-n_procs = 2
-n_cpus = 4
+n_procs = 250
+n_cpus = 32
 
 
 # Print some info
@@ -21,11 +21,11 @@ proc_info = ' - Total number of processes: {}'.format(n_procs)
 # fwhm_path = '/n05data/ayed/data/moments/seeing_distribution.npy'
 # output_path = '/n05data/ayed/outputs/datasets/'
 
-base_path = '/Users/tliaudat/Documents/PhD/github/cosmostat_official/deep_mccd/deep_mccd/data/realistic_dataset_input'
+base_path = '/home/tliaudat/github/aziz_repos/deep_mccd/data/realistic_dataset_input'
 e1_path = base_path + '/e1_psf.npy'
 e2_path = base_path + '/e2_psf.npy'
 fwhm_path = base_path + '/seeing_distribution.npy'
-output_path = '/Users/tliaudat/Documents/PhD/github/cosmostat_official/deep_mccd/local_results/inputs/realistic_data/'
+output_path = '/n05data/tliaudat/new_deepmccd/training_realistic_sims/inputs/'
 
 # Print info
 print('Dataset generation.')
@@ -35,7 +35,7 @@ print('Number of catalogs: ', n_procs)
 print('Number of CPUs: ', n_cpus)
 
 # Generate catalog list
-cat_id_list = [2100000 + i for i in range(n_procs)]
+cat_id_list = [2200000 + i for i in range(n_procs)]
 
 
 def generate_dataset(cat_id):
