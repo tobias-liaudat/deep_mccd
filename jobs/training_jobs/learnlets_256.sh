@@ -16,7 +16,7 @@
 #PBS -l nodes=n16:ppn=2:hasgpu
 
 # Full path to environment
-export CONFDIR="$HOME/github/aziz_repos/deep_mccd/"
+export CONFDIR="$HOME/github/aziz_repos/deep_mccd"
 
 # Activate conda environment
 module purge
