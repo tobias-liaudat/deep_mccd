@@ -22,7 +22,7 @@ export CONFDIR="$HOME/github/aziz_repos/deep_mccd"
 # Activate conda environment
 module load tensorflow/2.4
 module load intel/19.0/2
-source activate shapepipe
+source activate shapepipe_mccd
 
 # Run ShapePipe using full paths to executables
 python $CONFDIR/scripts/realistic_dataset_generation_parallel.py
