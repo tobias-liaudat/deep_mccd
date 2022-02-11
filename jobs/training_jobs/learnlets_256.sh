@@ -25,7 +25,7 @@ module load intel/19.0/2
 source activate shapepipe
 
 # Run ShapePipe using full paths to executables
-python $CONFDIR/scripts/learnlets_256.py
+python $CONFDIR/scripts/training/learnlets_256.py
 
 # Return exit code
 exit 0
