@@ -25,7 +25,8 @@ module load intel/19.0/2
 source activate shapepipe_mccd
 
 # Run ShapePipe using full paths to executables
-/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/config_files/mccd_eigen_generation.ini
+# /home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/config_files/mccd_eigen_generation.ini
+$SPENV/bin/shapepipe_run -c $CONFDIR/config_files/mccd_eigen_generation.ini
 
 # Return exit code
 exit 0
