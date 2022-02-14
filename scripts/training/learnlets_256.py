@@ -24,7 +24,7 @@ print(tf.test.gpu_device_name())
 # Paths
 eigenpsf_dataset_path = '/n05data/ayed/outputs/eigenpsfs/dataset_eigenpsfs.fits'
 base_save_path = '/n05data/tliaudat/new_deepmccd/reproduce_aziz_results/trained_nets/learnlets_256/'
-checkpoint_path = 'cp_256.h5'
+checkpoint_path = base_save_path + 'cp_256.h5'
 
 img = fits.open(eigenpsf_dataset_path)
 img = img[1].data['VIGNETS_NOISELESS']
