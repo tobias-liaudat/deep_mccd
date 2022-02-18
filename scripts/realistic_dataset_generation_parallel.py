@@ -7,7 +7,7 @@ from joblib import Parallel, delayed, cpu_count, parallel_backend
 
 
 # Total number of datasets
-n_procs = 250
+n_procs = 270
 n_cpus = 8
 
 
@@ -35,7 +35,7 @@ print('Number of catalogs: ', n_procs)
 print('Number of CPUs: ', n_cpus)
 
 # Generate catalog list
-cat_id_list = [2200000 + i for i in range(n_procs)]
+cat_id_list = [2300000 + i for i in range(n_procs)]
 
 
 def generate_dataset(cat_id):

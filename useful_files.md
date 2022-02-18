@@ -34,10 +34,23 @@ Aziz datasets for testing PSF models with different star densities
 ## New version
 
 ### Realistic dataset for training and extracting noiseless eigenPSFs
+- Total number of generated datasets: 250
 ``` candide
 /n05data/tliaudat/new_deepmccd/training_realistic_sims/inputs/
 -> train_star_selection-22*.fits
 -> test_star_selection-22*.fits
+```
+
+### Trained classical MCCD models used for extracting the eigenPSFs
+- Total number of models trained and validated: 230
+``` candide
+/n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/shapepipe_run_2022-02-12_14-30-24/mccd_fit_val_runner/
+```
+
+### Baseline performance of classic MCCD without noise
+- Performance plots computed with the previous 230 validated datasets.
+``` candide
+/n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/merge_plot/
 ```
 
 
