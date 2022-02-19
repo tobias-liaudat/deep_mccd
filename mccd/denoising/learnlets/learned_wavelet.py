@@ -1,6 +1,5 @@
 
-import tensorflow.keras.backend as K
-from tensorflow.keras.layers import Activation, concatenate, UpSampling2D, Input, AveragePooling2D, Lambda
+from tensorflow.keras.layers import Activation, Input, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow import clip_by_value
@@ -8,7 +7,6 @@ from tensorflow import clip_by_value
 from mccd.denoising.evaluate import keras_psnr, keras_ssim, center_keras_psnr
 from mccd.denoising.learnlets.keras_utils import Normalisation, DynamicSoftThresholding, DynamicHardThresholding, RelaxedDynamicHardThresholding, LocalWienerFiltering, CheekyDynamicHardThresholding
 from mccd.denoising.learnlets.learnlet_layers import LearnletAnalysis, LearnletSynthesis
-from mccd.denoising.learnlets.wav_utils import get_wavelet_filters_normalisation
 
 
 def learnlet(
