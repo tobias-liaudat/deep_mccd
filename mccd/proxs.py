@@ -254,7 +254,7 @@ class Learnlets(ProximityParent):
         # Calculate noise std dev
         return self.mad(image[self.noise_window])
 
-    def convert_and_pad(self, image):
+    def OLD_convert_and_pad(self, image):
         r"""Convert images to 64x64x1 shaped tensors to feed the model, using zero-padding."""
         image = tf.reshape(
             tf.convert_to_tensor(image),
@@ -264,11 +264,21 @@ class Learnlets(ProximityParent):
         # return tf.pad(image, pad, "CONSTANT")
         return image
 
-    def crop_and_convert(self, image):
+    def OLD_crop_and_convert(self, image):
         r"""Crop back the image to its original size and convert it to np.array"""
         #image = tf.reshape(tf.image.crop_to_bounding_box(image, 6, 6, 51, 51), [np.shape(image)[0], 51, 51])
         image = tf.reshape(image, [np.shape(image)[0], 51, 51])
         return image.numpy()
+
+    @staticmethod
+    def convert_and_pad(image):
+        r""" Convert images to tensorflow's tensor and add an extra 4th dimension."""
+        return tf.expand_dims(tf.convert_to_tensor(image), axis=3)
+
+    @staticmethod
+    def crop_and_convert(image):
+        r"""Convert to numpy array and remove the 4th dimension."""
+        return image.numpy()[:,:,:,0]
 
     def op(self, image, **kwargs):
         r"""Apply Learnlets denoising."""
