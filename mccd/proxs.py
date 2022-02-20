@@ -254,21 +254,21 @@ class Learnlets(ProximityParent):
         # Calculate noise std dev
         return self.mad(image[self.noise_window])
 
-    def OLD_convert_and_pad(self, image):
-        r"""Convert images to 64x64x1 shaped tensors to feed the model, using zero-padding."""
-        image = tf.reshape(
-            tf.convert_to_tensor(image),
-            [np.shape(image)[0], np.shape(image)[1], np.shape(image)[2], 1]
-        )
-        # pad = tf.constant([[0,0], [6,7],[6,7], [0,0]])
-        # return tf.pad(image, pad, "CONSTANT")
-        return image
+    # def OLD_convert_and_pad(self, image):
+    #     r"""Convert images to 64x64x1 shaped tensors to feed the model, using zero-padding."""
+    #     image = tf.reshape(
+    #         tf.convert_to_tensor(image),
+    #         [np.shape(image)[0], np.shape(image)[1], np.shape(image)[2], 1]
+    #     )
+    #     # pad = tf.constant([[0,0], [6,7],[6,7], [0,0]])
+    #     # return tf.pad(image, pad, "CONSTANT")
+    #     return image
 
-    def OLD_crop_and_convert(self, image):
-        r"""Crop back the image to its original size and convert it to np.array"""
-        #image = tf.reshape(tf.image.crop_to_bounding_box(image, 6, 6, 51, 51), [np.shape(image)[0], 51, 51])
-        image = tf.reshape(image, [np.shape(image)[0], 51, 51])
-        return image.numpy()
+    # def OLD_crop_and_convert(self, image):
+    #     r"""Crop back the image to its original size and convert it to np.array"""
+    #     #image = tf.reshape(tf.image.crop_to_bounding_box(image, 6, 6, 51, 51), [np.shape(image)[0], 51, 51])
+    #     image = tf.reshape(image, [np.shape(image)[0], 51, 51])
+    #     return image.numpy()
 
     @staticmethod
     def convert_and_pad(image):
@@ -280,16 +280,52 @@ class Learnlets(ProximityParent):
         r"""Convert to numpy array and remove the 4th dimension."""
         return image.numpy()[:,:,:,0]
 
+    @staticmethod
+    def scale_img(image):
+        r"""Scale image to [-0.5, 0.5]. 
+        
+        Return the scaled image.
+        """
+        img_max = np.max(image)
+        img_min = np.min(image)
+
+        image -= img_min
+        image /= (img_max - img_min)
+        image -= 0.5
+
+        return image
+
+    @staticmethod
+    def rescale_img(image, new_max, new_min):
+        r"""Rescale the image from [-0.5, 0.5] to [min, max]."""
+        image += 0.5
+        image *= (new_max - new_min)
+        image += new_min
+        return image
+
     def op(self, image, **kwargs):
         r"""Apply Learnlets denoising."""
-        # Threshold all scales but the coarse
         image = utils.reg_format(image)
-        multiple = np.array([np.sum(image[i,:,:])>0 for i in np.arange(len(image))]) * 2. - 1.
+        # Transform all eigenPSFs into positive (avoid sign indetermination)
+        multiple = np.array([np.sum(im)>0 for im in image]) * 2. - 1.
         image *= multiple.reshape((-1, 1, 1))
-        self.noise = np.array([self.noise_estimator(image[_i,:,:]) for _i in np.arange(len(image))])
+        # Scale 
+        img_maxs = np.amax(image, axis=(1,2))
+        img_mins = np.amin(image, axis=(1,2))
+        image = np.array([self.scale_img(im) for im in image])
+         # Calculate noise
+        self.noise = np.array([self.noise_estimator(im) for im in image])
         self.noise = tf.reshape(tf.convert_to_tensor(self.noise), [len(image), 1])
+        # Convert to tensorflow and expand 4th dimension
         image = self.convert_and_pad(image)
+        # Denoise
         image = self.model.predict((image, self.noise))
+        # Rescale the images to the original max and min values
+        image = np.array([
+            self.rescale_img(im, _max, _min) 
+            for im, _max, _min in zip(image, img_maxs, img_mins)
+        ])
+        # Retransform eigenPSF into their original sign
         image = tf.math.multiply(multiple.reshape((-1, 1, 1, 1)), image)
         return utils.rca_format(self.crop_and_convert(image))
 
