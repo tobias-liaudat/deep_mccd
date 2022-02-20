@@ -44,9 +44,9 @@ def add_noise_function(image, snr_range, tf_window, noise_estimator=True):
     
     # Apply the noise
     im_shape = tf.cast(tf.shape(image), dtype=tf.float64)
-    sigma_noise = tf.math.sqrt(tf.norm(image)/(snr * im_shape[0] * im_shape[1]))
+    sigma_noise = tf.norm(image, ord='euclidean') / (snr * im_shape[0] * im_shape[1])
     noisy_image = image + tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=sigma_noise, dtype=tf.float64)
-    norm_noisy_img = noisy_image / tf.norm(noisy_image)
+    norm_noisy_img = noisy_image / tf.norm(noisy_image, ord='euclidean')
 
     # Apply window to the normalised noisy image
     windowed_img = tf.boolean_mask(norm_noisy_img, tf_window)
