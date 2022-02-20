@@ -46,14 +46,27 @@ def add_noise_function(image, snr_range, tf_window, noise_estimator=True):
     im_shape = tf.cast(tf.shape(image), dtype=tf.float64)
     sigma_noise = tf.norm(image, ord='euclidean') / (snr * im_shape[0] * im_shape[1])
     noisy_image = image + tf.random.normal(shape=tf.shape(image), mean=0.0, stddev=sigma_noise, dtype=tf.float64)
-    norm_noisy_img = noisy_image / tf.norm(noisy_image, ord='euclidean')
+    # norm_noisy_img = noisy_image / tf.norm(noisy_image, ord='euclidean')
 
     # Apply window to the normalised noisy image
-    windowed_img = tf.boolean_mask(norm_noisy_img, tf_window)
+    windowed_img = tf.boolean_mask(noisy_image, tf_window)
     if noise_estimator:       
-        return norm_noisy_img, tf.reshape(tf.numpy_function(mad,[windowed_img], Tout=tf.float64), [1,])
+        return noisy_image, tf.reshape(tf.numpy_function(mad,[windowed_img], Tout=tf.float64), [1,])
     else:
-        return norm_noisy_img
+        return noisy_image
+
+def normalise(image):
+    """ Normalise (scale the image values). 
+    
+    I in [a,b]
+    Operations are:
+    [0,b-a]
+    [0, 1]
+    tilde(I) in [-0.5, 0.5]
+    """
+    image -= tf.math.reduce_min(image)
+    image /= tf.math.reduce_max(image)
+    return image - 0.5
 
 
 def eigenPSF_data_gen(path, 
@@ -84,7 +97,9 @@ def eigenPSF_data_gen(path,
         lambda x: (add_noise_function(x, tf_snr_range, tf_window, noise_estimator=noise_estimator), x),
         num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
-    
+    # Normalise
+    image_noise_ds = image_noise_ds.map(normalise, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
     image_noise_ds = image_noisy_ds.shuffle(buffer_size=n_shuffle*batch_size)
     image_noisy_ds = image_noisy_ds.batch(batch_size)
     image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
