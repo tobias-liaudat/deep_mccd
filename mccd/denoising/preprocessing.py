@@ -92,14 +92,15 @@ def eigenPSF_data_gen(path,
         dtype=tf.bool)
     tf_window = tf.reshape(tf_window, (img_shape[0], img_shape[1], 1))
 
+    # Normalise
+    image_noise_ds = ds.map(normalise, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
     # Apply noise and estimate noise std
-    image_noisy_ds = ds.map(
+    image_noisy_ds = image_noise_ds.map(
         lambda x: (add_noise_function(x, tf_snr_range, tf_window, noise_estimator=noise_estimator), x),
         num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
-    # Normalise
-    image_noise_ds = image_noise_ds.map(normalise, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
+    
     image_noise_ds = image_noisy_ds.shuffle(buffer_size=n_shuffle*batch_size)
     image_noisy_ds = image_noisy_ds.batch(batch_size)
     image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
