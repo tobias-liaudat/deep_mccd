@@ -68,7 +68,7 @@ training, test = img[:int(size_train),:,:], img[int(size_train):,:,:]
 
 print('Prepare datasets..')
 training = eigenPSF_data_gen(
-    path=training,
+    data=training,
     snr_range=[1e-3, 50],
     img_shape=(51, 51),
     batch_size=batch_size,
@@ -76,7 +76,7 @@ training = eigenPSF_data_gen(
 )
 
 test = eigenPSF_data_gen(
-    path=test,
+    data=test,
     snr_range=[1e-3, 50],
     img_shape=(51, 51),
     batch_size=1

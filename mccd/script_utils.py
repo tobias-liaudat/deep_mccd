@@ -72,7 +72,7 @@ def train_learnlets(**args):
 
     print('Prepare datasets..')
     training = eigenPSF_data_gen(
-        path=training,
+        data=training,
         snr_range=args['snr_range'], # [1e-3, 50],
         img_shape=(51, 51),
         batch_size=batch_size,
@@ -80,14 +80,14 @@ def train_learnlets(**args):
     )
 
     test = eigenPSF_data_gen(
-        path=test,
+        data=test,
         snr_range=args['snr_range'], #[1e-3, 50],
         img_shape=(51, 51),
         batch_size=1
     )
 
 
-    model=Learnlet(**run_params)
+    model = Learnlet(**run_params)
     steps = int(size_train/batch_size)
 
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
