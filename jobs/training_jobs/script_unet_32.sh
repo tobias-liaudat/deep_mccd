@@ -27,7 +27,7 @@ source activate shapepipe
 # Run ShapePipe using full paths to executables
 python $CONFDIR/scripts/training_unets.py \
     --run_id_name unet_32 \
-    --dataset_path /n05data/ayed/outputs/eigenpsfs/dataset_eigenpsfs.fits \
+    --dataset_path /n05data/ayed/outputs/eigenpsfs/global_eigenpsfs.fits \
     --base_save_path /n05data/tliaudat/new_deepmccd/reproduce_aziz_results/trained_nets/unet_32/ \
     --layers_n_channel 32 \
     --layers_levels 5 \
