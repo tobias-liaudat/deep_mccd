@@ -85,8 +85,8 @@ def eigenPSF_data_gen(
 
     Parameters
     ----------
-    data: np.ndarray [batch x im_x x im_y]
-        Input images
+    data: np.ndarray [batch, im_x, im_y]
+        Input images.
     snr_range: numpy.ndarray
         Min and max snr for noise addition.
     img_shape: tuple
@@ -101,6 +101,17 @@ def eigenPSF_data_gen(
         If the noise estimation is returned from the `add_noise_function`
 
     """
+    # Verify the eigenPSFs are positive
+    multiple = np.array([np.sum(im)>0 for im in data]) * 2. - 1.
+    data *= multiple.reshape((-1, 1, 1))
+    # Verify consistency
+    if (data.shape[0] != img_shape[0]) or (data.shape[1] != img_shape[1]):
+        raise ValueError
+    # Expand last dimension
+    data = np.reshape(data, (data.shape[0], img_shape[0], img_shape[1], 1))
+    # Shuffle data
+    np.random.shuffle(data)
+
     # Init dataset from file
     ds = tf.data.Dataset.from_tensor_slices(data)
     # Cast SNR range 
