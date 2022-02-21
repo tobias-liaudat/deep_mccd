@@ -1,13 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# PSF modelling and evaluation
-
 import mccd
 import click
-
-# from absl import app
-# from absl import flags
 
 @click.command()
 
