@@ -26,7 +26,7 @@ import click
     help="Base path for saving files.")
 # Learnlet parameters
 @click.option(
-    "--layers_n_channels",
+    "--layers_n_channel",
     default=32,
     type=int,
     help="Number filters in the smallest level of the unet. Increasing a factor of 2 each time we go to the next deeper level.")
