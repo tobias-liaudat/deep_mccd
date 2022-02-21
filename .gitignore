@@ -13,7 +13,8 @@ mccd/__pycache__
 .vscode/
 
 # Ignore jupyter caches
-*.ipynb_checkpoints/*
+testing_notebooks/.ipynb_checkpoints
+testing_notebooks/candide_notebooks/.ipynb_checkpoints
 
 # Ignore build files
 mccd.egg-info/
