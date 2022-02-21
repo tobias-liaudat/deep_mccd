@@ -12,6 +12,9 @@ mccd/__pycache__
 # Ignore vscode files
 .vscode/
 
+# Ignore jupyter caches
+*.ipynb_checkpoints/*
+
 # Ignore build files
 mccd.egg-info/
 
