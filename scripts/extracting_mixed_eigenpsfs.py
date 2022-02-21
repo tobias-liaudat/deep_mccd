@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
 
 import numpy as np
 import random
@@ -23,7 +21,7 @@ for j in list(range(2000000, 2000287)) + list(range(2100000, 2100150)):
     fitted_model = np.load(path_fitted_model, allow_pickle=True)
     S = fitted_model[1]['S']
 
-     for k in range (40):
+    for k in range (40):
         S_loc = S[k]
         vignets_noiseless[i*605+k*14:i*605+(k+1)*14, :, :] = mccd.utils.reg_format(S_loc)
      
@@ -44,10 +42,3 @@ train_dic = {'VIGNETS_NOISELESS': vignets_noiseless}
 mccd.mccd_utils.save_to_fits(train_dic, '/n05data/ayed/outputs/eigenpsfs/dataset_eigenpsfs.fits')
 
     
-
-
-# In[ ]:
-
-
-
-

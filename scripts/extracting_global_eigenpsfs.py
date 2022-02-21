@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
 
 import numpy as np
 import random
@@ -38,10 +36,6 @@ train_dic = {'VIGNETS_NOISELESS': vignets_noiseless}
 mccd.mccd_utils.save_to_fits(train_dic, '/n05data/ayed/outputs/eigenpsfs/global_eigenpsfs.fits')
 
     
-
-
-# In[ ]:
-
 
 
 
