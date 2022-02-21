@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.optimizers import Adam
 from astropy.io import fits
 from mccd.denoising.learnlets.learnlet_model import Learnlet
-from mccd.denoising.evaluate import keras_psnr, keras_ssim, center_keras_psnr
+from mccd.denoising.evaluate import keras_psnr, center_keras_psnr
 from mccd.denoising.preprocessing import eigenPSF_data_gen
 
 from tensorflow.compat.v1 import ConfigProto
@@ -28,13 +25,6 @@ checkpoint_path = base_save_path + 'cp_256.h5'
 
 img = fits.open(eigenpsf_dataset_path)
 img = img[1].data['VIGNETS_NOISELESS']
-img = np.reshape(img, (len(img), 51, 51, 1))
-
-for i in range (len(img)):
-    if np.sum(img[i, :, :, :]) < 0:
-        img[i, :, :, :] = -img[i, :, :, :]
-
-np.random.shuffle(img)
 
 size_train = np.floor(len(img)*0.95)
 training, test = img[:int(size_train),:,:], img[int(size_train):,:,:]
@@ -84,7 +74,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 
 model.compile(optimizer=Adam(learning_rate=1e-4),
     loss='mse',
-    metrics=[keras_psnr, center_keras_psnr],
+    metrics=['mse', keras_psnr, center_keras_psnr],
 )
 
 history = model.fit(
