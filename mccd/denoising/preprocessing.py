@@ -105,7 +105,7 @@ def eigenPSF_data_gen(
     multiple = np.array([np.sum(im)>0 for im in data]) * 2. - 1.
     data *= multiple.reshape((-1, 1, 1))
     # Verify consistency
-    if (data.shape[0] != img_shape[0]) or (data.shape[1] != img_shape[1]):
+    if (data.shape[1] != img_shape[0]) or (data.shape[2] != img_shape[1]):
         raise ValueError
     # Expand last dimension
     data = np.reshape(data, (data.shape[0], img_shape[0], img_shape[1], 1))
