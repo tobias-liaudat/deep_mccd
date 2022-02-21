@@ -69,21 +69,40 @@ def normalise(image):
     return image - 0.5
 
 
-def eigenPSF_data_gen(path, 
-              snr_range,
-              img_shape=(51, 51),
-              batch_size=1,
-              win_rad=14,
-              n_shuffle=20,
-              noise_estimator=True):
+def eigenPSF_data_gen(
+    data, 
+    snr_range,
+    img_shape=(51, 51),
+    batch_size=16,
+    win_rad=14,
+    n_shuffle=50,
+    noise_estimator=True
+):
     """ Dataset generator of eigen-PSFs.
 
     On-the-fly addition of noise following a SNR distribution.
     We also calculate the noise std.
 
+    Parameters
+    ----------
+    data: np.ndarray [batch x im_x x im_y]
+        Input images
+    snr_range: numpy.ndarray
+        Min and max snr for noise addition.
+    img_shape: tuple
+        Image dimensions
+    batch_size: int
+        Batch size
+    win_rad: int
+        Window radius in pixels for noise estimation.
+    n_shuffle: int
+        Number of batchs used to shuffle.
+    noise_estimator: bool
+        If the noise estimation is returned from the `add_noise_function`
+
     """
     # Init dataset from file
-    ds = tf.data.Dataset.from_tensor_slices(path)
+    ds = tf.data.Dataset.from_tensor_slices(data)
     # Cast SNR range 
     tf_snr_range = tf.cast(snr_range, dtype=tf.float64)
     # Create window for noise estimation
@@ -100,8 +119,9 @@ def eigenPSF_data_gen(path,
         lambda x: (add_noise_function(x, tf_snr_range, tf_window, noise_estimator=noise_estimator), x),
         num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
-    
+    # Shuffle the data
     image_noise_ds = image_noisy_ds.shuffle(buffer_size=n_shuffle*batch_size)
+    # Batch after shuffling to get unique batches at each epoch.
     image_noisy_ds = image_noisy_ds.batch(batch_size)
     image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
