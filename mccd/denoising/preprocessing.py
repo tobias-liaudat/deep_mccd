@@ -71,7 +71,7 @@ def normalise(image):
 
 def eigenPSF_data_gen(
     data, 
-    snr_range,
+    snr_range=[1e-3, 50],
     img_shape=(51, 51),
     batch_size=16,
     win_rad=14,
