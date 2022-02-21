@@ -305,29 +305,31 @@ class Learnlets(ProximityParent):
 
     def op(self, image, **kwargs):
         r"""Apply Learnlets denoising."""
-        image = utils.reg_format(image)
+        # TODO check if the np.copy() is necessary
+        imgs = utils.reg_format(np.copy(image))
         # Transform all eigenPSFs into positive (avoid sign indetermination)
-        multiple = np.array([np.sum(im)>0 for im in image]) * 2. - 1.
-        image *= multiple.reshape((-1, 1, 1))
+        multiple = np.array([np.sum(im)>0 for im in imgs]) * 2. - 1.
+        imgs *= multiple.reshape((-1, 1, 1))
         # Scale 
-        img_maxs = np.amax(image, axis=(1,2))
-        img_mins = np.amin(image, axis=(1,2))
-        image = np.array([self.scale_img(im) for im in image])
+        img_maxs = np.amax(imgs, axis=(1,2))
+        img_mins = np.amin(imgs, axis=(1,2))
+        imgs = np.array([self.scale_img(im) for im in imgs])
          # Calculate noise
-        self.noise = np.array([self.noise_estimator(im) for im in image])
-        self.noise = tf.reshape(tf.convert_to_tensor(self.noise), [len(image), 1])
+        self.noise = np.array([self.noise_estimator(im) for im in imgs])
+        self.noise = tf.reshape(tf.convert_to_tensor(self.noise), [len(imgs), 1])
         # Convert to tensorflow and expand 4th dimension
-        image = self.convert_and_pad(image)
+        imgs = self.convert_and_pad(imgs)
         # Denoise
-        image = self.model.predict((image, self.noise))
+        imgs = self.model.predict((imgs, self.noise))
         # Rescale the images to the original max and min values
-        image = np.array([
+        imgs = np.array([
             self.rescale_img(im, _max, _min) 
-            for im, _max, _min in zip(image, img_maxs, img_mins)
+            for im, _max, _min in zip(imgs, img_maxs, img_mins)
         ])
         # Retransform eigenPSF into their original sign
-        image = tf.math.multiply(multiple.reshape((-1, 1, 1, 1)), image)
-        return utils.rca_format(self.crop_and_convert(image))
+        imgs = tf.math.multiply(multiple.reshape((-1, 1, 1, 1)), imgs)
+        imgs = utils.rca_format(self.crop_and_convert(imgs))
+        return imgs
 
     def cost(self, x, y):
         r"""Return cost."""
