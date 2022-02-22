@@ -42,6 +42,11 @@ import click
     type=bool,
     help="Use learning rate scheduler.")
 @click.option(
+    "--enhance_noise",
+    default=False,
+    type=bool,
+    help="Enhance noise in training. Shift from a flat SNR distribution to a skewed distribution towards more noisy samples.")
+@click.option(
     "--n_shuffle",
     default=20,
     type=int,

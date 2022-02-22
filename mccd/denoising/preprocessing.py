@@ -33,7 +33,7 @@ def calculate_window(im_shape=(51, 51), win_rad=14):
 
     return window
 
-def add_noise_function(image, snr_range, tf_window, noise_estimator=True):
+def add_noise_function(image, snr_range, tf_window, noise_estimator=True, enhance_noise=False):
     # Draw random SNR
     snr = tf.random.uniform(
             (1,),
@@ -41,7 +41,15 @@ def add_noise_function(image, snr_range, tf_window, noise_estimator=True):
             maxval=snr_range[1],
             dtype=tf.float64
         )
-    
+
+    if enhance_noise:
+        snr = tf.random.uniform(
+            (1,),
+            minval=snr_range[0],
+            maxval=snr[0],
+            dtype=tf.float64
+        )
+  
     # Apply the noise
     im_shape = tf.cast(tf.shape(image), dtype=tf.float64)
     sigma_noise = tf.norm(image, ord='euclidean') / (snr * im_shape[0] * im_shape[1])
@@ -76,7 +84,8 @@ def eigenPSF_data_gen(
     batch_size=16,
     win_rad=14,
     n_shuffle=50,
-    noise_estimator=True
+    noise_estimator=True,
+    enhance_noise=False,
 ):
     """ Dataset generator of eigen-PSFs.
 
@@ -99,6 +108,9 @@ def eigenPSF_data_gen(
         Number of batchs used to shuffle.
     noise_estimator: bool
         If the noise estimation is returned from the `add_noise_function`
+    enhance_noise: bool
+        If True the noise distribution will be skewed for more noisy values
+        insterad of being flat in the SNR range.
 
     """
     # Verify the eigenPSFs are positive
@@ -127,7 +139,13 @@ def eigenPSF_data_gen(
 
     # Apply noise and estimate noise std
     image_noisy_ds = image_noise_ds.map(
-        lambda x: (add_noise_function(x, tf_snr_range, tf_window, noise_estimator=noise_estimator), x),
+        lambda x: (add_noise_function(
+            x,
+            tf_snr_range,
+            tf_window,
+            noise_estimator=noise_estimator,
+            enhance_noise=enhance_noise
+        ), x),
         num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
     # Shuffle the data

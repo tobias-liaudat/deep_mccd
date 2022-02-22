@@ -76,14 +76,16 @@ def train_learnlets(**args):
         snr_range=args['snr_range'], # [1e-3, 50],
         img_shape=(51, 51),
         batch_size=batch_size,
-        n_shuffle=args['n_shuffle']
+        n_shuffle=args['n_shuffle'],
+        enhance_noise=args['enhance_noise']
     )
 
     test = eigenPSF_data_gen(
         data=test,
         snr_range=args['snr_range'], #[1e-3, 50],
         img_shape=(51, 51),
-        batch_size=1
+        batch_size=1,
+        enhance_noise=args['enhance_noise']
     )
 
 
@@ -197,6 +199,7 @@ def train_unets(**args):
         batch_size=batch_size,
         n_shuffle=args['n_shuffle'],
         noise_estimator=False,
+        enhance_noise=args['enhance_noise']
     )
 
     test = eigenPSF_data_gen(
@@ -205,6 +208,7 @@ def train_unets(**args):
         img_shape=(51, 51),
         batch_size=1,
         noise_estimator=False,
+        enhance_noise=args['enhance_noise']
     )
 
     steps = int(size_train/batch_size)

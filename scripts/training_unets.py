@@ -42,6 +42,11 @@ import click
     help="Kernel size for the unet.")
 # Training parameters
 @click.option(
+    "--enhance_noise",
+    default=False,
+    type=bool,
+    help="Enhance noise in training. Shift from a flat SNR distribution to a skewed distribution towards more noisy samples.")
+@click.option(
     "--use_lr_scheduler",
     default=True,
     type=bool,
@@ -53,7 +58,7 @@ import click
     help="Shuffle number for the tensorflow datset.")
 @click.option(
     "--batch_size",
-    default=32,
+    default=64,
     type=int,
     help="Training batch size.")
 @click.option(
