@@ -42,9 +42,11 @@ Aziz datasets for testing PSF models with different star densities
 ```
 
 ### Trained classical MCCD models used for extracting the eigenPSFs
-- Total number of models trained and validated: 230
+- Total number of models trained and validated: 500 (7.6G trained models and 82G validation files)
+- First dataset starting with 2200..., second dataset starting with 2300...
 ``` candide
-/n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/shapepipe_run_2022-02-12_14-30-24/mccd_fit_val_runner/
+/n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/validation_files/validation_psf-*.fits
+/n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/trained_models/fitted_model-*.npy
 ```
 
 ### Baseline performance of classic MCCD without noise
@@ -53,4 +55,8 @@ Aziz datasets for testing PSF models with different star densities
 /n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/merge_plot/
 ```
 
+### EigenPSF datasets
+``` candide
+/n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/eigenPSF_datasets/
+```
 
