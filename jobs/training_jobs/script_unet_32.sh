@@ -33,6 +33,7 @@ python $CONFDIR/scripts/training_unets.py \
     --layers_levels 5 \
     --kernel_size 3 \
     --use_lr_scheduler True \
+    --enhance_noise True \
     --n_shuffle 20 \
     --batch_size 64 \
     --n_epochs 500 \

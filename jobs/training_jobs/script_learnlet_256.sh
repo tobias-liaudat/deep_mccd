@@ -32,6 +32,7 @@ python $CONFDIR/scripts/training_learnlets.py \
     --n_tiling 256 \
     --n_scales 5 \
     --use_lr_scheduler True \
+    --enhance_noise True \
     --n_shuffle 20 \
     --batch_size 32 \
     --n_epochs 500 \
