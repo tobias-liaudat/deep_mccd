@@ -11,11 +11,11 @@ from mccd.denoising.unets.unet import Unet
 from mccd.denoising.evaluate import keras_psnr, center_keras_psnr
 from mccd.denoising.preprocessing import eigenPSF_data_gen
 
-from tensorflow.compat.v1 import ConfigProto
-from tensorflow.compat.v1 import InteractiveSession
-config = ConfigProto()
-config.gpu_options.allow_growth = True
-session = InteractiveSession(config=config)
+# from tensorflow.compat.v1 import ConfigProto
+# from tensorflow.compat.v1 import InteractiveSession
+# config = ConfigProto()
+# config.gpu_options.allow_growth = True
+# session = InteractiveSession(config=config)
 
 
 def train_learnlets(**args):
