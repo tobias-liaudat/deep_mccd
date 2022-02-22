@@ -34,7 +34,7 @@ python $CONFDIR/scripts/training_unets.py \
     --kernel_size 3 \
     --use_lr_scheduler True \
     --n_shuffle 20 \
-    --batch_size 32 \
+    --batch_size 64 \
     --n_epochs 500 \
     --lr_param 1e-3 \
     --data_train_ratio 0.9 \
