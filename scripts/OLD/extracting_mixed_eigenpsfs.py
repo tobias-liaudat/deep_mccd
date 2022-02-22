@@ -8,7 +8,12 @@ import itertools
 import mccd
 
 
+# Saving path
+save_dir_path = '/n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/eigenPSF_datasets/'
+
 ## Extracting the EigenPSFs from the fitted models
+
+
 
 vignets_noiseless = np.zeros((264385, 51, 51))
 
