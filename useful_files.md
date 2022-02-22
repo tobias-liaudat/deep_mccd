@@ -13,9 +13,9 @@ Aziz trained models (Learnlets)
 Extracted eigenPSFs from the trained MCCDs. Used for the training of Learn lets and Unets
 ``` candide
 /n05data/ayed/outputs/eigenpsfs/
--> dataset_eigenpsfs.fits
--> global_eigenpsfs.fits
--> local_eigenpsfs.fits
+-> dataset_eigenpsfs.fits (5.2G)
+-> global_eigenpsfs.fits (0.4G)
+-> local_eigenpsfs.fits (4.8G)
 ```
 
 
@@ -58,5 +58,10 @@ Aziz datasets for testing PSF models with different star densities
 ### EigenPSF datasets
 ``` candide
 /n05data/tliaudat/new_deepmccd/training_realistic_sims/output_mccd/eigenPSF_datasets/
+-> all_eigenpsfs.fits (6.0G)
+-> global_eigenpsfs.fits (0.5G)
+-> local_eigenpsfs.fits (5.5G)
 ```
+
+
 
