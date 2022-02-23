@@ -104,6 +104,9 @@ def train_learnlets(**args):
     base_save_path = args['base_save_path']
     checkpoint_path = base_save_path + 'cp_' + run_id_name + '.h5'
 
+    # Save parameters
+    np.save(base_save_path + 'params_' + run_id_name + '.npy', args, allow_pickle=True)
+
     # Training parameters
     batch_size = args['batch_size'] # 32
     n_epochs = args['n_epochs'] # 500
@@ -242,6 +245,9 @@ def train_unets(**args):
     eigenpsf_dataset_path = args['dataset_path']
     base_save_path = args['base_save_path']
     checkpoint_path = base_save_path + 'cp_' + run_id_name + '.h5'
+
+    # Save parameters
+    np.save(base_save_path + 'params_' + run_id_name + '.npy', args, allow_pickle=True)
 
     # Training parameters
     batch_size = args['batch_size'] # 32
