@@ -18,6 +18,12 @@ import click
     default="/n05data/ayed/outputs/eigenpsfs/dataset_eigenpsfs.fits",
     type=str,
     help="Input dataset path.")
+@click.option(
+    "--im_shape",
+    nargs=2,
+    default=[51, 51],
+    type=int,
+    help="Images shape.")
 # Saving paths
 @click.option(
     "--base_save_path",
