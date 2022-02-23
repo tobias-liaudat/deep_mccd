@@ -25,7 +25,9 @@ import mccd.proxs as prox
 import mccd.grads as grads
 import mccd.utils as utils
 import mccd.mccd_utils as mccd_utils
-
+import mccd.script_utils as script_utils
+from . import saving_learnlets as learnlet_base_path
+from . import saving_unets as unet_base_path
 
 def mccd_quickload(path):
     r"""Load pre-fitted MCCD model.
@@ -923,12 +925,38 @@ class MCCD(object):
             verbose=self.verbose)
 
         # Proxs for component optimization
-
-        # print(np.shape(comp[0]))
-        # print(np.shape(utils.reg_format(comp[0])))
-
         #sparsity_prox = prox.StarletThreshold(0)
-        sparsity_prox = prox.Learnlets()
+        # sparsity_prox = prox.Learnlets()
+        denoising_model = 'learnlet'
+
+        if denoising_model == 'learnlet':
+            # Build path
+            local_learnlet_path = learnlet_base_path.__path__[0] + '/cp_local_learnlet_256.h5'
+            global_learnlet_path = learnlet_base_path.__path__[0] + '/cp_global_learnlet_256.h5'
+            # Load param dicts
+            local_params = {}
+            global_params = {}
+            # Init models
+            local_Learnlets = script_utils.init_learnlets(local_learnlet_path, local_params)
+            global_Learnlets = script_utils.init_learnlets(global_learnlet_path, global_params)
+            # Init prox operators
+            local_denoise_prox = prox.ProxLearnlets(model=local_Learnlets)
+            global_denoise_prox = prox.ProxLearnlets(model=global_Learnlets)
+
+        elif denoising_model == 'unet':
+            # Build path
+            local_unet_path = unet_base_path.__path__[0] + '/cp_local_unet_32.h5'
+            global_unet_path = unet_base_path.__path__[0] + '/cp_global_unet_32.h5'
+            # Load param dicts
+            local_params = {}
+            global_params = {}
+            # Init models
+            local_unets = script_utils.init_unets(local_unet_path, local_params)
+            global_unets = script_utils.init_unets(global_unet_path, global_params)
+            # Init prox operators
+            local_denoise_prox = prox.ProxUnets(model=local_unets)
+            global_denoise_prox = prox.ProxUnets(model=global_unets)            
+
         pos_prox = [prox.PositityOff(H_k) for H_k in H_glob]
         # lin_recombine = [prox.LinRecombine(weights_loc[k], self.Phi_filters)
         #                  for k in range(self.n_ccd)]
@@ -937,41 +965,10 @@ class MCCD(object):
 
         # Proxs for weight optimization
         # Local model
-        # The last (1-steady_state_thresh_loc)*100% elements will have same
-        # threshold
-        # min_elements_loc: Minimum number of elements to maintain when
-        # threshold is the highest
-
-        # steady_state_thresh_loc = 0.8
-        # min_elements_loc = 5
-
-        # def iter_func_loc(x, elem_size):
-        #     return np.min(
-        #         [np.floor((elem_size / 2 - 1) * (1 / np.sqrt(
-        #             self.nb_subiter_A_loc * steady_state_thresh_loc)) \
-        #                   * np.sqrt(x)) + min_elements_loc,
-        #          np.floor(elem_size / 2)])
-
         # [TL] Using strong sparsity inducing function
         iter_func_loc = lambda x, elem_size: np.floor(np.sqrt(x)) + 1
         coeff_prox_loc = prox.KThreshold(iter_func_loc)
-
         # Global model
-        # The last (1-steady_state_thresh_glob)*100% elements will have same
-        # threshold
-        # min_elements_glob: Minimum number of elements to maintain when
-        # threshold is the highest
-
-        # steady_state_thresh_glob = 0.8
-        # min_elements_glob = 5
-
-        # def iter_func_glob(x, elem_size):
-        #     return np.min(
-        #         [np.floor((elem_size / 2 - 1) * (1 / np.sqrt(
-        #             self.nb_subiter_A_glob * steady_state_thresh_glob)) \
-        #                   * np.sqrt(x)) + min_elements_glob,
-        #          np.floor(elem_size / 2)])
-
         # [TL] Using strong sparsity inducing function
         iter_func_glob_v2 = lambda x, elem_size: np.floor(np.sqrt(x)) + 1
         coeff_prox_glob = prox.KThreshold(iter_func_glob_v2)
@@ -1016,8 +1013,6 @@ class MCCD(object):
                 tau = 1. / beta
 ################### PROX ALG
 
-                print("allo")
-                print(np.shape(comp[0]))
 
                 # Reweighting. Borrowed from original RCA code
                 if self.nb_reweight:
@@ -1027,7 +1022,7 @@ class MCCD(object):
                         source_optim = optimalg.ForwardBackward(
                             ######transf_comp[self.n_ccd]
                             comp[self.n_ccd],
-                            source_glob_grad, sparsity_prox,
+                            source_glob_grad, global_denoise_prox,
                             cost=source_glob_cost,
                             beta_param=1. / beta, auto_iterate=False,
                             verbose=self.verbose, progress=self.verbose)
@@ -1042,7 +1037,7 @@ class MCCD(object):
                     source_optim = optimalg.ForwardBackward(                        
                         #####transf_comp[self.n_ccd],
                         comp[self.n_ccd],
-                        source_glob_grad, sparsity_prox, cost=source_glob_cost,
+                        source_glob_grad, global_denoise_prox, cost=source_glob_cost,
                         beta_param=1. / beta, auto_iterate=False,
                         verbose=self.verbose, progress=self.verbose)
                     source_optim.iterate(max_iter=self.nb_subiter_S_glob)
@@ -1133,7 +1128,7 @@ class MCCD(object):
                                 comp[k],
                                 dual_comp[k],
                                 source_loc_grad[k],
-                                sparsity_prox,
+                                local_denoise_prox,
                                 pos_prox[k],
                                 linear=lin_recombine[k],
                                 cost=source_loc_cost[k],
@@ -1154,7 +1149,7 @@ class MCCD(object):
                             comp[k],
                             dual_comp[k],
                             source_loc_grad[k],
-                            sparsity_prox,
+                            local_denoise_prox,
                             pos_prox[k],
                             linear=lin_recombine[k],
                             cost=source_loc_cost[k],
