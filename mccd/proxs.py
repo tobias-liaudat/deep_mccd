@@ -180,7 +180,191 @@ class StarletThreshold(ProximityParent):
         r"""Return cost."""
         return 0
 
-class Learnlets(ProximityParent):
+class ProxLearnlets(ProximityParent):
+    r"""Learnlets denoising proximal operator.
+
+    Parameters
+    ----------
+    model: tf.Model
+        Denoising model. Learnlet in this case.
+    im_shape: tuple
+        Image shape.
+    den_rad: float
+        Radius for the denoising window.
+    """
+
+    def __init__(self, model=None, im_shape=(51,51), den_win_rad=13., items=None):
+        r"""Initialize class attributes."""
+        self.im_shape = im_shape
+        self.den_win_rad = den_win_rad
+        self.model = model
+        self.noise = None
+        self.noise_window = None
+
+        # Init noise window
+        self.init_noise_win()
+
+    def init_noise_win(self):
+        # Calculate window function for estimating the noise
+        self.noise_window = np.ones(self.im_shape, dtype=bool)
+        for coord_x in range(self.im_shape[0]):
+            for coord_y in range(self.im_shape[1]):
+                if np.sqrt((coord_x - self.im_shape[0]/2)**2 + (coord_y - self.im_shape[1]/2)**2) <= self.den_win_rad :
+                    self.noise_window[coord_x, coord_y] = False
+
+    def mad(self, x):
+        r"""Compute an estimation of the standard deviation
+        of a Gaussian distribution using the robust
+        MAD (Median Absolute Deviation) estimator."""
+        return 1.4826*np.median(np.abs(x - np.median(x)))
+
+    def noise_estimator(self, image):
+        r"""Estimate the noise level of the image."""
+        # Calculate noise std dev
+        return self.mad(image[self.noise_window])
+
+    @staticmethod
+    def convert_and_pad(image):
+        r""" Convert images to tensorflow's tensor and add an extra 4th dimension."""
+        return tf.expand_dims(tf.convert_to_tensor(image), axis=3)
+
+    @staticmethod
+    def crop_and_convert(image):
+        r"""Convert to numpy array and remove the 4th dimension."""
+        return image.numpy()[:,:,:,0]
+
+    @staticmethod
+    def scale_img(image):
+        r"""Scale image to [-0.5, 0.5]. 
+        
+        Return the scaled image.
+        """
+        img_max = np.max(image)
+        img_min = np.min(image)
+
+        image -= img_min
+        image /= (img_max - img_min)
+        image -= 0.5
+
+        return image
+
+    @staticmethod
+    def rescale_img(image, new_max, new_min):
+        r"""Rescale the image from [-0.5, 0.5] to [min, max]."""
+        image += 0.5
+        image *= (new_max - new_min)
+        image += new_min
+        return image
+
+    def op(self, images, **kwargs):
+        r"""Apply Learnlets denoising."""
+        imgs = utils.reg_format(np.copy(images))
+        # Transform all eigenPSFs into positive (avoid sign indetermination)
+        multiple = np.array([np.sum(im)>0 for im in imgs]) * 2. - 1.
+        imgs *= multiple.reshape((-1, 1, 1))
+        # Scale 
+        img_maxs = np.amax(imgs, axis=(1,2))
+        img_mins = np.amin(imgs, axis=(1,2))
+        imgs = np.array([self.scale_img(im) for im in imgs])
+         # Calculate noise
+        self.noise = np.array([self.noise_estimator(im) for im in imgs])
+        self.noise = tf.reshape(tf.convert_to_tensor(self.noise), [imgs.shape[0], 1])
+        # Convert to tensorflow and expand 4th dimension
+        imgs = self.convert_and_pad(imgs)
+        # Denoise
+        imgs = self.model.predict((imgs, self.noise))
+        # Rescale the images to the original max and min values
+        imgs = np.array([
+            self.rescale_img(im, _max, _min) 
+            for im, _max, _min in zip(imgs, img_maxs, img_mins)
+        ])
+        # Retransform eigenPSF into their original sign
+        imgs = tf.math.multiply(multiple.reshape((-1, 1, 1, 1)), imgs)
+        return utils.rca_format(self.crop_and_convert(imgs))
+
+    def cost(self, x, y):
+        r"""Return cost."""
+        return 0
+
+class ProxUnets(ProximityParent):
+    r"""Unet denoising proximal operator.
+
+    Parameters
+    ----------
+    model: tf.Model
+        Denoising model. Unet in this case.
+    im_shape: tuple
+        Image shape.
+
+    """
+
+    def __init__(self, model=None, im_shape=(51,51), items=None):
+        r"""Initialize class attributes."""
+        self.im_shape = im_shape
+        self.model = model
+
+    @staticmethod
+    def convert_and_pad(image):
+        r""" Convert images to tensorflow's tensor and add an extra 4th dimension."""
+        return tf.expand_dims(tf.convert_to_tensor(image), axis=3)
+
+    @staticmethod
+    def crop_and_convert(image):
+        r"""Convert to numpy array and remove the 4th dimension."""
+        return image.numpy()[:,:,:,0]
+
+    @staticmethod
+    def scale_img(image):
+        r"""Scale image to [-0.5, 0.5]. 
+        
+        Return the scaled image.
+        """
+        img_max = np.max(image)
+        img_min = np.min(image)
+
+        image -= img_min
+        image /= (img_max - img_min)
+        image -= 0.5
+
+        return image
+
+    @staticmethod
+    def rescale_img(image, new_max, new_min):
+        r"""Rescale the image from [-0.5, 0.5] to [min, max]."""
+        image += 0.5
+        image *= (new_max - new_min)
+        image += new_min
+        return image
+
+    def op(self, images, **kwargs):
+        r"""Apply Learnlets denoising."""
+        imgs = utils.reg_format(np.copy(images))
+        # Transform all eigenPSFs into positive (avoid sign indetermination)
+        multiple = np.array([np.sum(im)>0 for im in imgs]) * 2. - 1.
+        imgs *= multiple.reshape((-1, 1, 1))
+        # Scale 
+        img_maxs = np.amax(imgs, axis=(1,2))
+        img_mins = np.amin(imgs, axis=(1,2))
+        imgs = np.array([self.scale_img(im) for im in imgs])
+        # Convert to tensorflow and expand 4th dimension
+        imgs = self.convert_and_pad(imgs)
+        # Denoise
+        imgs = self.model.predict(imgs)
+        # Rescale the images to the original max and min values
+        imgs = np.array([
+            self.rescale_img(im, _max, _min) 
+            for im, _max, _min in zip(imgs, img_maxs, img_mins)
+        ])
+        # Retransform eigenPSF into their original sign
+        imgs = tf.math.multiply(multiple.reshape((-1, 1, 1, 1)), imgs)
+        return utils.rca_format(self.crop_and_convert(imgs))
+ 
+    def cost(self, x, y):
+        r"""Return cost."""
+        return 0
+
+
+class OLD_Learnlets(ProximityParent):
     r"""Apply Learnlets denoising.
 
     Parameters
@@ -335,7 +519,7 @@ class Learnlets(ProximityParent):
         r"""Return cost."""
         return 0
 
-class Unets(ProximityParent):
+class OLD_Unets(ProximityParent):
     r"""Apply Unets denoising.
 
     Parameters
