@@ -17,6 +17,47 @@ from modopt.signal.wavelet import filter_convolve
 import galsim as gs
 
 
+def butterworth_2d_filter(im_shape, order, cut_dist):
+    """ Butterworth 2D spectral filter
+    
+    This function generates the 2D Fourier mask of a Butterworth 
+    filter of order `order` with a cut off frequency corresponding to `cut_dist`.
+    """
+    
+    x_dim = im_shape[0]
+    y_dim = im_shape[1]
+
+    if im_shape[0] % 2 != 0:
+        x_arr = np.linspace(-x_dim//2 + 1, x_dim//2 + 1, x_dim, endpoint=False)
+    else:
+        x_arr = np.linspace(-x_dim//2 + 0.5, x_dim//2 + 0.5, x_dim, endpoint=False)
+
+    if im_shape[1] % 2 != 0:   
+        y_arr = np.linspace(-y_dim//2 + 1, y_dim//2 + 1, y_dim, endpoint=False)
+    else:
+        y_arr = np.linspace(-y_dim//2 + 0.5, y_dim//2 + 0.5, y_dim, endpoint=False)
+
+    # Generate spatial grid
+    xx, yy = np.meshgrid(x_arr, y_arr)
+    
+    butt_filter = np.zeros(im_shape)
+
+    for it_x in range(im_shape[0]):
+        for it_y in range(im_shape[1]):
+            den = (xx[it_x,it_y]**2 + yy[it_x,it_y]**2)/(cut_dist**2)
+            butt_filter[it_x,it_y] = 1 / (1 + den**(order))
+            
+    return butt_filter
+    
+    
+def fft_filter_image(img, fft_filter):
+    """ Filter image using 2D FFT.
+    """
+    img_fft = np.fft.fftshift(np.fft.fft2(img))
+    img_fft = img_fft * fft_filter
+    return (np.fft.ifft2(np.fft.ifftshift(img_fft))).real
+    
+
 def apply_transform(data, filters):
     r"""Transform ``data`` through application of a set of filters.
 
