@@ -18,6 +18,52 @@ from mccd.denoising.preprocessing import eigenPSF_data_gen
 # session = InteractiveSession(config=config)
 
 
+def init_learnlets(weights_path, **args):
+    """ Initialise the Learnlet model.
+    
+    """
+    # Learnlet parameters
+    run_params = {
+        'denoising_activation': 'dynamic_soft_thresholding',
+        'learnlet_analysis_kwargs':{
+            'n_tiling': args['n_tiling'],
+            'mixing_details': False,
+            'skip_connection': True,
+        },
+        'learnlet_synthesis_kwargs': {
+            'res': True,
+        },
+        'threshold_kwargs':{
+            'noise_std_norm': True,
+        },
+        'n_scales': args['n_scales'],
+        'n_reweights_learn': 1,
+        'clip': False,
+    }
+
+    # Create fake data to init the model
+    im_val = tf.convert_to_tensor(np.random.rand(2, args['im_shape'][0], args['im_shape'][1], 1))
+    std_val = tf.convert_to_tensor(np.random.rand(2))
+
+    learnlet_model = Learnlet(**run_params)
+    # Compile 
+    learnlet_model.compile(
+        optimizer=tf.keras.optimizers.Adam(lr=1e-6),
+        loss='mse',
+    )
+    # Init
+    learnlet_model.evaluate(
+        (im_val, std_val),
+        im_val,
+    )
+    # Load and good bye
+    learnlet_model.load_weights(weights_path)
+
+    return learnlet_model
+    
+
+
+
 def train_learnlets(**args):
     r""" Train the Learnlet model.
     
