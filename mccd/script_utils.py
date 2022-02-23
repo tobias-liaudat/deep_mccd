@@ -20,7 +20,7 @@ from mccd.denoising.preprocessing import eigenPSF_data_gen
 
 def init_learnlets(weights_path, **args):
     """ Initialise the Learnlet model.
-    
+
     """
     # Learnlet parameters
     run_params = {
@@ -60,7 +60,37 @@ def init_learnlets(weights_path, **args):
     learnlet_model.load_weights(weights_path)
 
     return learnlet_model
-    
+
+
+def init_unets(weights_path, **args):
+    """ Initialise the Unet model.
+
+    """
+
+    # Create fake data to init the model
+    im_val = tf.convert_to_tensor(np.random.rand(2, args['im_shape'][0], args['im_shape'][1], 1))
+
+    # Increasing the filter number with a factor of 2
+    layers_n_channels = [args['layers_n_channel'] * (2**it) for it in range(args['layers_levels'])]
+
+    # Create instance
+    unet_model = Unet(
+        n_output_channels=1,
+        kernel_size=args['kernel_size'],
+        layers_n_channels=layers_n_channels
+    )    
+    # Compile
+    unet_model.compile(
+        optimizer = tf.keras.optimizers.Adam(lr=1e-6),
+        loss='mse',
+    )
+    # Init
+    unet_model.evaluate(im_val, im_val)
+    # Load weights and good bye
+    unet_model.load_weights(weights_path)
+
+    return unet_model
+
 
 
 
