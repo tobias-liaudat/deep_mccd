@@ -941,15 +941,16 @@ class MCCD(object):
         # threshold
         # min_elements_loc: Minimum number of elements to maintain when
         # threshold is the highest
-        steady_state_thresh_loc = 0.8
-        min_elements_loc = 5
 
-        def iter_func_loc(x, elem_size):
-            return np.min(
-                [np.floor((elem_size / 2 - 1) * (1 / np.sqrt(
-                    self.nb_subiter_A_loc * steady_state_thresh_loc)) \
-                          * np.sqrt(x)) + min_elements_loc,
-                 np.floor(elem_size / 2)])
+        # steady_state_thresh_loc = 0.8
+        # min_elements_loc = 5
+
+        # def iter_func_loc(x, elem_size):
+        #     return np.min(
+        #         [np.floor((elem_size / 2 - 1) * (1 / np.sqrt(
+        #             self.nb_subiter_A_loc * steady_state_thresh_loc)) \
+        #                   * np.sqrt(x)) + min_elements_loc,
+        #          np.floor(elem_size / 2)])
 
         # [TL] Using strong sparsity inducing function
         iter_func_loc = lambda x, elem_size: np.floor(np.sqrt(x)) + 1
@@ -960,15 +961,16 @@ class MCCD(object):
         # threshold
         # min_elements_glob: Minimum number of elements to maintain when
         # threshold is the highest
-        steady_state_thresh_glob = 0.8
-        min_elements_glob = 5
 
-        def iter_func_glob(x, elem_size):
-            return np.min(
-                [np.floor((elem_size / 2 - 1) * (1 / np.sqrt(
-                    self.nb_subiter_A_glob * steady_state_thresh_glob)) \
-                          * np.sqrt(x)) + min_elements_glob,
-                 np.floor(elem_size / 2)])
+        # steady_state_thresh_glob = 0.8
+        # min_elements_glob = 5
+
+        # def iter_func_glob(x, elem_size):
+        #     return np.min(
+        #         [np.floor((elem_size / 2 - 1) * (1 / np.sqrt(
+        #             self.nb_subiter_A_glob * steady_state_thresh_glob)) \
+        #                   * np.sqrt(x)) + min_elements_glob,
+        #          np.floor(elem_size / 2)])
 
         # [TL] Using strong sparsity inducing function
         iter_func_glob_v2 = lambda x, elem_size: np.floor(np.sqrt(x)) + 1
