@@ -27,7 +27,7 @@ module load intel/19.0/2
 source activate shapepipe_mccd
 
 # Run ShapePipe using full paths to executables
-python $CONFDIR/scripts/generate_testing_dataset.py
+python $CONFDIR/scripts/generate_testing_datasets.py
 
 # Return exit code
 exit 0
