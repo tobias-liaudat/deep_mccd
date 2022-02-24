@@ -847,8 +847,8 @@ class MCCD(object):
                 learnlet_base_path.__path__[0] + '/params_global_learnlet_256.npy', allow_pickle=True
             )[()]
             # Init models
-            local_Learnlets = script_utils.init_learnlets(local_learnlet_path, local_params)
-            global_Learnlets = script_utils.init_learnlets(global_learnlet_path, global_params)
+            local_Learnlets = script_utils.init_learnlets(local_learnlet_path, **local_params)
+            global_Learnlets = script_utils.init_learnlets(global_learnlet_path, **global_params)
             # Init prox operators
             local_denoise_prox = prox.ProxLearnlets(model=local_Learnlets)
             global_denoise_prox = prox.ProxLearnlets(model=global_Learnlets)
@@ -865,8 +865,8 @@ class MCCD(object):
                 unet_base_path.__path__[0] + '/params_global_unet_32.npy', allow_pickle=True
             )[()]
             # Init models
-            local_unets = script_utils.init_unets(local_unet_path, local_params)
-            global_unets = script_utils.init_unets(global_unet_path, global_params)
+            local_unets = script_utils.init_unets(local_unet_path, **local_params)
+            global_unets = script_utils.init_unets(global_unet_path, **global_params)
             # Init prox operators
             local_denoise_prox = prox.ProxUnets(model=local_unets)
             global_denoise_prox = prox.ProxUnets(model=global_unets)
