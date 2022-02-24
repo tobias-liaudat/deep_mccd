@@ -833,6 +833,46 @@ class MCCD(object):
 
         self.n_comp_loc += n_poly_comp
 
+    def _initialize_prox_denoising(self, denoising_model='learnlet'): 
+
+        if denoising_model == 'learnlet':
+            # Build path
+            local_learnlet_path = learnlet_base_path.__path__[0] + '/cp_local_learnlet_256.h5'
+            global_learnlet_path = learnlet_base_path.__path__[0] + '/cp_global_learnlet_256.h5'
+            # Load param dicts
+            local_params = np.load(
+                learnlet_base_path.__path__[0] + 'params_local_learnlet_256.npy', alloow_pickle=True
+            )
+            global_params = np.load(
+                learnlet_base_path.__path__[0] + 'params_global_learnlet_256.npy', alloow_pickle=True
+            )
+            # Init models
+            local_Learnlets = script_utils.init_learnlets(local_learnlet_path, local_params)
+            global_Learnlets = script_utils.init_learnlets(global_learnlet_path, global_params)
+            # Init prox operators
+            local_denoise_prox = prox.ProxLearnlets(model=local_Learnlets)
+            global_denoise_prox = prox.ProxLearnlets(model=global_Learnlets)
+
+        elif denoising_model == 'unet':
+            # Build path
+            local_unet_path = unet_base_path.__path__[0] + '/cp_local_unet_32.h5'
+            global_unet_path = unet_base_path.__path__[0] + '/cp_global_unet_32.h5'
+            # Load param dicts
+            local_params = np.load(
+                unet_base_path.__path__[0] + 'params_local_unet_32.npy', alloow_pickle=True
+            )
+            global_params = np.load(
+                unet_base_path.__path__[0] + 'params_global_unet_32.npy', alloow_pickle=True
+            )
+            # Init models
+            local_unets = script_utils.init_unets(local_unet_path, local_params)
+            global_unets = script_utils.init_unets(global_unet_path, global_params)
+            # Init prox operators
+            local_denoise_prox = prox.ProxUnets(model=local_unets)
+            global_denoise_prox = prox.ProxUnets(model=global_unets)
+
+        return local_denoise_prox, global_denoise_prox
+
     def _fit(self):
         r"""Perform the main model fitting."""
         # Function variables
@@ -928,34 +968,7 @@ class MCCD(object):
         #sparsity_prox = prox.StarletThreshold(0)
         # sparsity_prox = prox.Learnlets()
         denoising_model = 'learnlet'
-
-        if denoising_model == 'learnlet':
-            # Build path
-            local_learnlet_path = learnlet_base_path.__path__[0] + '/cp_local_learnlet_256.h5'
-            global_learnlet_path = learnlet_base_path.__path__[0] + '/cp_global_learnlet_256.h5'
-            # Load param dicts
-            local_params = {}
-            global_params = {}
-            # Init models
-            local_Learnlets = script_utils.init_learnlets(local_learnlet_path, local_params)
-            global_Learnlets = script_utils.init_learnlets(global_learnlet_path, global_params)
-            # Init prox operators
-            local_denoise_prox = prox.ProxLearnlets(model=local_Learnlets)
-            global_denoise_prox = prox.ProxLearnlets(model=global_Learnlets)
-
-        elif denoising_model == 'unet':
-            # Build path
-            local_unet_path = unet_base_path.__path__[0] + '/cp_local_unet_32.h5'
-            global_unet_path = unet_base_path.__path__[0] + '/cp_global_unet_32.h5'
-            # Load param dicts
-            local_params = {}
-            global_params = {}
-            # Init models
-            local_unets = script_utils.init_unets(local_unet_path, local_params)
-            global_unets = script_utils.init_unets(global_unet_path, global_params)
-            # Init prox operators
-            local_denoise_prox = prox.ProxUnets(model=local_unets)
-            global_denoise_prox = prox.ProxUnets(model=global_unets)            
+        local_denoise_prox, global_denoise_prox = self._initialize_prox_denoising(denoising_model)
 
         pos_prox = [prox.PositityOff(H_k) for H_k in H_glob]
         # lin_recombine = [prox.LinRecombine(weights_loc[k], self.Phi_filters)
