@@ -842,10 +842,10 @@ class MCCD(object):
             # Load param dicts
             local_params = np.load(
                 learnlet_base_path.__path__[0] + 'params_local_learnlet_256.npy', alloow_pickle=True
-            )
+            )[()]
             global_params = np.load(
                 learnlet_base_path.__path__[0] + 'params_global_learnlet_256.npy', alloow_pickle=True
-            )
+            )[()]
             # Init models
             local_Learnlets = script_utils.init_learnlets(local_learnlet_path, local_params)
             global_Learnlets = script_utils.init_learnlets(global_learnlet_path, global_params)
@@ -860,10 +860,10 @@ class MCCD(object):
             # Load param dicts
             local_params = np.load(
                 unet_base_path.__path__[0] + 'params_local_unet_32.npy', alloow_pickle=True
-            )
+            )[()]
             global_params = np.load(
                 unet_base_path.__path__[0] + 'params_global_unet_32.npy', alloow_pickle=True
-            )
+            )[()]
             # Init models
             local_unets = script_utils.init_unets(local_unet_path, local_params)
             global_unets = script_utils.init_unets(global_unet_path, global_params)
