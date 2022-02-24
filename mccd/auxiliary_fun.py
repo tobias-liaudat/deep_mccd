@@ -1281,6 +1281,9 @@ class MCCDParamsParser(object):
 
         if not self.config.has_option('INSTANCE', 'FP_GEOMETRY'):
             self.config.set('INSTANCE', 'FP_GEOMETRY', 'CFIS')
+        
+        if not self.config.has_option('INSTANCE', 'PROX_DENOISING'):
+            self.config.set('INSTANCE', 'PROX_DENOISING', 'learnlet_256')
 
     def _set_fit_options(self):
         """Set Fit Options.
@@ -1419,6 +1422,7 @@ class MCCDParamsParser(object):
                     self.config['INSTANCE'].get('MIN_D_COMP_GLOB'))
 
             fp_geometry = self.config['INSTANCE'].get('FP_GEOMETRY')
+            denoising_model = self.config['INSTANCE'].get('PROX_DENOISING')
 
             # Build the parameter dictionaries
             self.mccd_inst_kw = {
@@ -1431,7 +1435,8 @@ class MCCDParamsParser(object):
                 'ksig_glob': ksig_glob,
                 'rmse_thresh': rmse_thresh,
                 'ccd_star_thresh': ccd_star_thresh,
-                'fp_geometry': fp_geometry
+                'fp_geometry': fp_geometry,
+                'denoising_model': denoising_model,
             }
 
     def _build_fit_kw(self):
