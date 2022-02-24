@@ -153,7 +153,7 @@ class MCCD(object):
                  min_d_comp_glob=None, upfact=1, ksig_loc=1.,
                  ksig_glob=1., rmse_thresh=1.25, ccd_star_thresh=0.15,
                  n_scales=3, ksig_init=1., filters=None, verbose=2,
-                 fp_geometry='CFIS'):
+                 fp_geometry='CFIS', denoising_model='learnlet_256'):
         r"""General parameter initialisations."""
         # Main model paramters
         self.n_comp_loc = n_comp_loc
@@ -184,6 +184,9 @@ class MCCD(object):
             self.loc2glob = mccd_utils.Loc2Glob_EUCLID_sim()
         else:
             raise NotImplementedError
+
+        # Proximal denoising strategy
+        self.denoising_model = denoising_model
 
         # Outlier rejection parameters
         self.ccd_star_thresh = ccd_star_thresh
@@ -833,18 +836,18 @@ class MCCD(object):
 
         self.n_comp_loc += n_poly_comp
 
-    def _initialize_prox_denoising(self, denoising_model='learnlet'): 
+    def _initialize_prox_denoising(self, denoising_model='learnlet_256'): 
 
-        if denoising_model == 'learnlet':
+        if denoising_model == 'learnlet_256' or denoising_model == 'learnlet_512':
             # Build path
-            local_learnlet_path = learnlet_base_path.__path__[0] + '/cp_local_learnlet_256.h5'
-            global_learnlet_path = learnlet_base_path.__path__[0] + '/cp_global_learnlet_256.h5'
+            local_learnlet_path = learnlet_base_path.__path__[0] + '/cp_local_' + denoising_model + '.h5'
+            global_learnlet_path = learnlet_base_path.__path__[0] + '/cp_global_' + denoising_model + '.h5'
             # Load param dicts
             local_params = np.load(
-                learnlet_base_path.__path__[0] + '/params_local_learnlet_256.npy', allow_pickle=True
+                learnlet_base_path.__path__[0] + '/params_local_' + denoising_model + '.npy', allow_pickle=True
             )[()]
             global_params = np.load(
-                learnlet_base_path.__path__[0] + '/params_global_learnlet_256.npy', allow_pickle=True
+                learnlet_base_path.__path__[0] + '/params_global_' + denoising_model + '.npy', allow_pickle=True
             )[()]
             # Init models
             local_Learnlets = script_utils.init_learnlets(local_learnlet_path, **local_params)
@@ -900,8 +903,8 @@ class MCCD(object):
             self.Phi_filters = mccd_utils.get_mr_filters(
                 self.im_hr_shape[0][:2], opt=self.opt,
                 coarse=True, trim=False)
-        rho_phi = np.sqrt(
-            np.sum(np.sum(np.abs(self.Phi_filters), axis=(1, 2)) ** 2))
+        # rho_phi = np.sqrt(
+        #     np.sum(np.sum(np.abs(self.Phi_filters), axis=(1, 2)) ** 2))
 
         # Gradient objects
         source_loc_grad = [grads.SourceLocGrad(
@@ -967,8 +970,7 @@ class MCCD(object):
         # Proxs for component optimization
         #sparsity_prox = prox.StarletThreshold(0)
         # sparsity_prox = prox.Learnlets()
-        denoising_model = 'learnlet'
-        local_denoise_prox, global_denoise_prox = self._initialize_prox_denoising(denoising_model)
+        local_denoise_prox, global_denoise_prox = self._initialize_prox_denoising(self.denoising_model)
 
         pos_prox = [prox.PositityOff(H_k) for H_k in H_glob]
         # lin_recombine = [prox.LinRecombine(weights_loc[k], self.Phi_filters)
