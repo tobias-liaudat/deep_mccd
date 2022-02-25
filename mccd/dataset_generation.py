@@ -429,7 +429,14 @@ class GenerateRealisticDataset(object):
                 cat_id_str + '.npy'
             np.save(save_str, self.exposure_sim)
 
-    def generate_test_data(self, grid_pos_bool=False, x_grid=5, y_grid=10, SNR_range=None, use_SNR_dist=False):
+    def generate_test_data(
+        self,
+        grid_pos_bool=False,
+        x_grid=5,
+        y_grid=10,
+        SNR_range=None,
+        use_SNR_dist=False
+    ):
         r"""Generate the test dataset and save it into a fits file.
 
         Parameters
