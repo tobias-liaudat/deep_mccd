@@ -13,7 +13,7 @@
 # Set maximum computing time (e.g. 5min)
 #PBS -l walltime=90:00:00
 # Request number of cores
-#PBS -l nodes=1:ppn=3
+#PBS -l nodes=n01:ppn=3
 
 # Full path to environment
 export SPENV="$HOME/.conda/envs/shapepipe_mccd"
@@ -27,7 +27,8 @@ module load intel/19.0/2
 source activate shapepipe_mccd
 
 # Run ShapePipe using full paths to executables
-python $CONFDIR/scripts/generate_testing_datasets.py
+python $CONFDIR/scripts/generate_flat_SNR_testing_datasets.py
+python $CONFDIR/scripts/generate_real_SNR_testing_datasets.py
 
 # Return exit code
 exit 0
