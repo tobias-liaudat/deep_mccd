@@ -140,13 +140,27 @@ class GenerateRealisticDataset(object):
         Default is ``None``.
 
     """
-    def __init__(self, e1_path, e2_path, size_path, output_path,
-                 image_size=51, psf_flux=1., beta_psf=4.765, pix_scale=0.187,
-                 catalog_id=2086592, n_ccd=40, range_mean_star_qt=[40, 100],
-                 range_dev_star_nb=[-10, 10], max_fwhm_var=0.04,
-                 save_realisation=False, loc2glob=None,
-                 atmos_kwargs={'ngrid': 8192}, e1_kwargs={},
-                 e2_kwargs={}):
+    def __init__(
+        self, 
+        e1_path, 
+        e2_path, 
+        size_path, 
+        output_path,
+        image_size=51, 
+        psf_flux=1., 
+        beta_psf=4.765, 
+        pix_scale=0.187,
+        catalog_id=2086592,
+        n_ccd=40,
+        range_mean_star_qt=[40, 100],
+        range_dev_star_nb=[-10, 10],
+        max_fwhm_var=0.04,
+        save_realisation=False,
+        loc2glob=None,
+        atmos_kwargs={'ngrid': 8192},
+        e1_kwargs={},
+        e2_kwargs={}
+    ):
         # Load the paths
         self.output_path = output_path
         self.e1_path = e1_path
@@ -183,12 +197,13 @@ class GenerateRealisticDataset(object):
 
         # Generate exposure instance
         self.exposure_sim = mccd.dataset_generation.ExposureSimulation(
-                              e1_bin_path=self.e1_path,
-                              e2_bin_path=self.e2_path,
-                              fwhm_dist_path=self.size_path,
-                              atmos_kwargs=atmos_kwargs,
-                              e1_kwargs=e1_kwargs,
-                              e2_kwargs=e2_kwargs)
+            e1_bin_path=self.e1_path,
+            e2_bin_path=self.e2_path,
+            fwhm_dist_path=self.size_path,
+            atmos_kwargs=atmos_kwargs,
+            e1_kwargs=e1_kwargs,
+            e2_kwargs=e2_kwargs
+        )
 
     def init_random_positions(self):
         r""" Initialise random positions."""
@@ -228,9 +243,13 @@ class GenerateRealisticDataset(object):
             # Concatenate
             if self.positions is not None:
                 self.positions = np.concatenate(
-                    (self.positions, current_pos), axis=0)
+                    (self.positions, current_pos),
+                    axis=0
+                )
                 self.ccd_list = np.concatenate(
-                    (self.ccd_list, current_ccd), axis=0)
+                    (self.ccd_list, current_ccd),
+                    axis=0
+                )
             else:
                 self.positions = current_pos
                 self.ccd_list = current_ccd
@@ -242,19 +261,23 @@ class GenerateRealisticDataset(object):
         self.ccd_list = None
 
         # Parameters
-        self.test_grid_xy = [x_grid,
-                             y_grid]  # Grid size for the PSF generation
+        # Grid size for the PSF generation
+        self.test_grid_xy = [x_grid, y_grid]  
 
         # Generation of the test positions
         ccd_unique_list = np.arange(self.n_ccd)
 
         # Generate local generic grid
-        x_lin = np.linspace(start=self.image_size,
-                            stop=self.loc2glob.x_npix - self.image_size,
-                            num=self.test_grid_xy[0])
-        y_lin = np.linspace(start=self.image_size,
-                            stop=self.loc2glob.y_npix - self.image_size,
-                            num=self.test_grid_xy[1])
+        x_lin = np.linspace(
+            start=self.image_size,
+            stop=self.loc2glob.x_npix - self.image_size,
+            num=self.test_grid_xy[0]
+        )
+        y_lin = np.linspace(
+            start=self.image_size,
+            stop=self.loc2glob.y_npix - self.image_size,
+            num=self.test_grid_xy[1]
+        )
 
         xv, yv = np.meshgrid(x_lin, y_lin)
         x_coor = xv.flatten()
@@ -266,7 +289,9 @@ class GenerateRealisticDataset(object):
         for it in range(len(ccd_unique_list)):
             x_glob, y_glob = self.loc2glob.loc2glob_img_coord(
                 ccd_n=ccd_unique_list[it],
-                x_coor=np.copy(x_coor), y_coor=np.copy(y_coor))
+                x_coor=np.copy(x_coor),
+                y_coor=np.copy(y_coor)
+            )
             position_list.append(np.array([x_glob, y_glob]).T)
             ccd_list.append(
                 (np.ones(len(x_glob), dtype=int) * ccd_unique_list[it]).astype(
@@ -288,26 +313,36 @@ class GenerateRealisticDataset(object):
             self.exposure_sim.mean_fwhm
         return scaled_fwhms
 
-    def generate_train_data(self):
+    def generate_train_data(self, SNR_range=None):
         r"""Generate the training dataset and saves it in fits format.
 
         The positions are drawn randomly.
+
+        Parameters
+        ----------
+        SNR_range: tuple
+            SNR range for the addition of white Gaussian noise. 
+            If is `None`, no noise is added.
+
         """
         # Initialise positions
         self.init_random_positions()
 
         # Define the ellipticities for each stars
         e1s, e2s, fwhms = self.exposure_sim.interpolate_values(
-            self.positions[:, 0], self.positions[:, 1])
-
+            self.positions[:, 0],
+            self.positions[:, 1]
+        )
         # Verify the max fwhm variations
         # We need to scale the variation range
         fwhms = self.scale_fwhms(fwhms)
 
         # Generate the vignets
-        new_vignets = np.zeros((e1s.shape[0],
-                                self.image_size,
-                                self.image_size))
+        new_vignets = np.zeros((
+            e1s.shape[0],
+            self.image_size,
+            self.image_size
+        ))
         new_e1_HSM = np.zeros(e1s.shape)
         new_e2_HSM = np.zeros(e1s.shape)
         new_sig_HSM = np.zeros(e1s.shape)
@@ -324,12 +359,11 @@ class GenerateRealisticDataset(object):
             image_epsf = gs.ImageF(self.image_size, self.image_size)
             # Define intrapixel shift (uniform distribution in [-0.5,0.5])
             rand_shift = np.random.rand(2) - 0.5
-            psf.drawImage(image=image_epsf, offset=rand_shift,
-                          scale=self.pix_scale)
-
-            # Generate Gaussian noise for the PSF
-            # sigma_noise = 0
-            # gaussian_noise = gs.GaussianNoise(sigma=sigma_noise)
+            psf.drawImage(
+                image=image_epsf,
+                offset=rand_shift,
+                scale=self.pix_scale
+            )
 
             # Before adding the noise, we measure the ellipticity components
             my_moments = gs.hsm.FindAdaptiveMom(image_epsf)
@@ -337,25 +371,40 @@ class GenerateRealisticDataset(object):
             new_e2_HSM[it] = my_moments.observed_shape.g2
             new_sig_HSM[it] = my_moments.moments_sigma
 
-            # Add Gaussian noise to the PSF
-            # image_epsf.addNoise(gaussian_noise)
+            # Generate Gaussian noise for the PSF
+            if SNR_range is not None:
+                # Draw random SNR from the range
+                desired_SNR = np.random.rand(1) * (SNR_range[1] - SNR_range[0]) + SNR_range[0]
+                # Calculate the std dev of the noise
+                sigma_noise = np.sqrt(
+                    (np.sum(image_epsf.array ** 2) / (desired_SNR * self.image_size ** 2))
+                )
+                # Generate and add Gaussian noise to the image
+                gaussian_noise = gs.GaussianNoise(sigma=sigma_noise)
+                image_epsf.addNoise(gaussian_noise)
 
             new_vignets[it, :, :] = image_epsf.array
 
         new_masks = self.handle_SExtractor_mask(new_vignets, thresh=-1e5)
 
         # Build the dictionary
-        train_dic = {'VIGNET_LIST': new_vignets,
-                     'GLOB_POSITION_IMG_LIST': self.positions,
-                     'MASK_LIST': new_masks, 'CCD_ID_LIST': self.ccd_list,
-                     'TRUE_E1_HSM': new_e1_HSM, 'TRUE_E2_HSM': new_e2_HSM,
-                     'TRUE_SIG_HSM': new_sig_HSM}
+        train_dic = {
+            'VIGNET_LIST': new_vignets,
+            'GLOB_POSITION_IMG_LIST': self.positions,
+            'MASK_LIST': new_masks,
+            'CCD_ID_LIST': self.ccd_list,
+            'TRUE_E1_HSM': new_e1_HSM,
+            'TRUE_E2_HSM': new_e2_HSM,
+            'TRUE_SIG_HSM': new_sig_HSM
+        }
 
         # Save the fits file
-        mccd.mccd_utils.save_fits(train_dic,
-                                  train_bool=True,
-                                  cat_id=self.catalog_id,
-                                  output_path=self.output_path)
+        mccd.mccd_utils.save_fits(
+            train_dic,
+            train_bool=True,
+            cat_id=self.catalog_id,
+            output_path=self.output_path
+        )
 
         if self.save_realisation:
             # Save the exposure object realisation
@@ -364,7 +413,7 @@ class GenerateRealisticDataset(object):
                 cat_id_str + '.npy'
             np.save(save_str, self.exposure_sim)
 
-    def generate_test_data(self, grid_pos_bool=False, x_grid=5, y_grid=10):
+    def generate_test_data(self, grid_pos_bool=False, x_grid=5, y_grid=10, SNR_range=None):
         r"""Generate the test dataset and save it into a fits file.
 
         Parameters
@@ -373,6 +422,9 @@ class GenerateRealisticDataset(object):
             Horizontal number of elements of the testing grid in one CCD.
         y_grid: int
             Vertical number of elements of the testing grid in one CCD.
+        SNR_range: tuple
+            SNR range for the addition of white Gaussian noise. 
+            If is `None`, no noise is added.
 
         """
         # Generate positions (on the grid or at random places)
@@ -383,7 +435,9 @@ class GenerateRealisticDataset(object):
 
         # Calculate the ellipticities on the testing positions
         test_e1s, test_e2s, test_fwhms = self.exposure_sim.interpolate_values(
-            self.positions[:, 0], self.positions[:, 1])
+            self.positions[:, 0],
+            self.positions[:, 1]
+        )
 
         # Verify the max fwhm variations
         # We need to scale the variation range
@@ -401,8 +455,10 @@ class GenerateRealisticDataset(object):
         test_sig_HSM = np.zeros(test_e1s.shape)
         for it in range(test_e1s.shape[0]):
             # PSF generation. Define size
-            psf = gs.Moffat(fwhm=test_fwhms[it],
-                            beta=self.beta_psf)
+            psf = gs.Moffat(
+                fwhm=test_fwhms[it],
+                beta=self.beta_psf
+            )
             # Define the Flux
             psf = psf.withFlux(self.psf_flux)
             # Define the shear
@@ -417,23 +473,41 @@ class GenerateRealisticDataset(object):
             test_e2_HSM[it] = my_moments.observed_shape.g2
             test_sig_HSM[it] = my_moments.moments_sigma
 
+            # Generate Gaussian noise for the PSF
+            if SNR_range is not None:
+                # Draw random SNR from the range
+                desired_SNR = np.random.rand(1) * (SNR_range[1] - SNR_range[0]) + SNR_range[0]
+                # Calculate the std dev of the noise
+                sigma_noise = np.sqrt(
+                    (np.sum(image_epsf.array ** 2) / (desired_SNR * self.image_size ** 2))
+                )
+                # Generate and add Gaussian noise to the image
+                gaussian_noise = gs.GaussianNoise(sigma=sigma_noise)
+                image_epsf.addNoise(gaussian_noise)
+
             test_vignets[it, :, :] = image_epsf.array
 
         # Build the masks
         test_masks = self.handle_SExtractor_mask(test_vignets, thresh=-1e5)
 
         # Build the dictionary
-        test_dic = {'VIGNET_LIST': test_vignets,
-                    'GLOB_POSITION_IMG_LIST': self.positions,
-                    'MASK_LIST': test_masks, 'CCD_ID_LIST': self.ccd_list,
-                    'TRUE_E1_HSM': test_e1_HSM, 'TRUE_E2_HSM': test_e2_HSM,
-                    'TRUE_SIG_HSM': test_sig_HSM}
+        test_dic = {
+            'VIGNET_LIST': test_vignets,
+            'GLOB_POSITION_IMG_LIST': self.positions,
+            'MASK_LIST': test_masks,
+            'CCD_ID_LIST': self.ccd_list,
+            'TRUE_E1_HSM': test_e1_HSM,
+            'TRUE_E2_HSM': test_e2_HSM,
+            'TRUE_SIG_HSM': test_sig_HSM
+        }
 
         # Save the fits file
-        mccd.mccd_utils.save_fits(test_dic,
-                                  train_bool=False,
-                                  cat_id=self.catalog_id,
-                                  output_path=self.output_path)
+        mccd.mccd_utils.save_fits(
+            test_dic,
+            train_bool=False,
+            cat_id=self.catalog_id,
+            output_path=self.output_path
+        )
 
     @staticmethod
     def handle_SExtractor_mask(stars, thresh):
