@@ -11,7 +11,7 @@
 # Join output and errors in one file
 #PBS -j oe
 # Set maximum computing time (e.g. 5min)
-#PBS -l walltime=99:00:00
+#PBS -l walltime=96:00:00
 # Request number of cores
 #PBS -l nodes=n16:ppn=4:hasgpu
 
