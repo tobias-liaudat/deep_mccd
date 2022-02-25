@@ -97,6 +97,8 @@ class GenerateRealisticDataset(object):
         Path to the size distribution. FWHM in arcsec.
     output_path: str
         Path to the folder to save the simulated datasets.
+    SNR_dist_path: str
+        Path to the SNR distribution.
     image_size: int
         Dimension of the squared image stamp. (image_size x image_size)
         Default is ``51``.
@@ -146,6 +148,7 @@ class GenerateRealisticDataset(object):
         e2_path, 
         size_path, 
         output_path,
+        SNR_dist_path=None,
         image_size=51, 
         psf_flux=1., 
         beta_psf=4.765, 
@@ -166,6 +169,7 @@ class GenerateRealisticDataset(object):
         self.e1_path = e1_path
         self.e2_path = e2_path
         self.size_path = size_path
+        self.SNR_dist_path = SNR_dist_path
 
         # Train/Test data params
         self.image_size = image_size
@@ -184,6 +188,7 @@ class GenerateRealisticDataset(object):
         self.mean_star_qt = None
         self.positions = None
         self.ccd_list = None
+        self.SNR_dist = None
 
         # Define focal plane geometry
         if loc2glob is None:
@@ -194,6 +199,10 @@ class GenerateRealisticDataset(object):
         # Define camera geometry
         self.min_x, self.max_x = self.loc2glob.x_coord_range()
         self.min_y, self.max_y = self.loc2glob.y_coord_range()
+
+        # Load SNR distribution
+        if self.SNR_dist_path is not None:
+            self.SNR_dist = np.load(self.SNR_dist_path, allow_pickle=True)[()]
 
         # Generate exposure instance
         self.exposure_sim = mccd.dataset_generation.ExposureSimulation(
@@ -313,7 +322,7 @@ class GenerateRealisticDataset(object):
             self.exposure_sim.mean_fwhm
         return scaled_fwhms
 
-    def generate_train_data(self, SNR_range=None):
+    def generate_train_data(self, SNR_range=None, use_SNR_dist=False):
         r"""Generate the training dataset and saves it in fits format.
 
         The positions are drawn randomly.
@@ -323,6 +332,8 @@ class GenerateRealisticDataset(object):
         SNR_range: tuple
             SNR range for the addition of white Gaussian noise. 
             If is `None`, no noise is added.
+        use_SNR_dist: bool
+            Draw the SNR from the loaded SNR distribution. 
 
         """
         # Initialise positions
@@ -372,9 +383,14 @@ class GenerateRealisticDataset(object):
             new_sig_HSM[it] = my_moments.moments_sigma
 
             # Generate Gaussian noise for the PSF
-            if SNR_range is not None:
-                # Draw random SNR from the range
-                desired_SNR = np.random.rand(1) * (SNR_range[1] - SNR_range[0]) + SNR_range[0]
+            if (use_SNR_dist and self.SNR_dist is not None) or (SNR_range is not None):
+                # Draw the desired SNR
+                if use_SNR_dist and self.SNR_dist is not None:
+                    desired_SNR = self.SNR_dist.ppf(np.random.rand(1))
+                elif SNR_range is not None:
+                    # Draw random SNR from the range
+                    desired_SNR = np.random.rand(1) * (SNR_range[1] - SNR_range[0]) + SNR_range[0]
+
                 # Calculate the std dev of the noise
                 sigma_noise = np.sqrt(
                     (np.sum(image_epsf.array ** 2) / (desired_SNR * self.image_size ** 2))
@@ -413,7 +429,7 @@ class GenerateRealisticDataset(object):
                 cat_id_str + '.npy'
             np.save(save_str, self.exposure_sim)
 
-    def generate_test_data(self, grid_pos_bool=False, x_grid=5, y_grid=10, SNR_range=None):
+    def generate_test_data(self, grid_pos_bool=False, x_grid=5, y_grid=10, SNR_range=None, use_SNR_dist=False):
         r"""Generate the test dataset and save it into a fits file.
 
         Parameters
@@ -425,6 +441,8 @@ class GenerateRealisticDataset(object):
         SNR_range: tuple
             SNR range for the addition of white Gaussian noise. 
             If is `None`, no noise is added.
+        use_SNR_dist: bool
+            Draw the SNR from the loaded SNR distribution. 
 
         """
         # Generate positions (on the grid or at random places)
@@ -474,9 +492,14 @@ class GenerateRealisticDataset(object):
             test_sig_HSM[it] = my_moments.moments_sigma
 
             # Generate Gaussian noise for the PSF
-            if SNR_range is not None:
-                # Draw random SNR from the range
-                desired_SNR = np.random.rand(1) * (SNR_range[1] - SNR_range[0]) + SNR_range[0]
+            if (use_SNR_dist and self.SNR_dist is not None) or (SNR_range is not None):
+                # Draw the desired SNR
+                if use_SNR_dist and self.SNR_dist is not None:
+                    desired_SNR = self.SNR_dist.ppf(np.random.rand(1))
+                elif SNR_range is not None:
+                    # Draw random SNR from the range
+                    desired_SNR = np.random.rand(1) * (SNR_range[1] - SNR_range[0]) + SNR_range[0]
+
                 # Calculate the std dev of the noise
                 sigma_noise = np.sqrt(
                     (np.sum(image_epsf.array ** 2) / (desired_SNR * self.image_size ** 2))
