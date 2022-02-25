@@ -11,7 +11,7 @@
 # Join output and errors in one file
 #PBS -j oe
 # Set maximum computing time (e.g. 5min)
-#PBS -l walltime=99:00:00
+#PBS -l walltime=95:00:00
 # Request number of cores
 #PBS -l nodes=n16:ppn=4:hasgpu
 
@@ -29,6 +29,7 @@ source activate shapepipe
 /home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_flat_SNR/pipe_deep_mccd_mid_den_L256.ini
 /home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_flat_SNR/pipe_deep_mccd_mid_den_L512.ini
 /home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_flat_SNR/pipe_deep_mccd_mid_den_U32.ini
+
 # Real SNR
 /home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_real_SNR/pipe_deep_mccd_mid_den_L256.ini
 /home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_real_SNR/pipe_deep_mccd_mid_den_L512.ini
