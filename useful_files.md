@@ -63,5 +63,20 @@ Aziz datasets for testing PSF models with different star densities
 -> local_eigenpsfs.fits (5.5G)
 ```
 
+### Testing datasets
+``` candide
+/n05data/tliaudat/new_deepmccd/testing_realistic_sims/inputs/
+|-- flat_SNR
+|   |-- high_density
+|   |-- low_density
+|   `-- mid_density
+|-- real_SNR
+|   |-- high_density
+|   |-- low_density
+|   `-- mid_density
+```
 
-
+### Compatible version of tensorflow-addons with the Tensorflow 2.4 I am using
+```
+pip install --user tensorflow-addons==0.12.1
+```
