@@ -25,9 +25,15 @@ module load intel/19.0/2
 source activate shapepipe
 
 # Run ShapePipe using full paths to executables
-/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/configs/pipe_deep_mccd_high_den_L256.ini
-/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/configs/pipe_deep_mccd_high_den_L512.ini
-/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/configs/pipe_deep_mccd_high_den_U32.ini
+# Flat SNR
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_flat_SNR/pipe_deep_mccd_high_den_L256.ini
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_flat_SNR/pipe_deep_mccd_high_den_L512.ini
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_flat_SNR/pipe_deep_mccd_high_den_U32.ini
+# Real SNR
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_real_SNR/pipe_deep_mccd_high_den_L256.ini
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_real_SNR/pipe_deep_mccd_high_den_L512.ini
+/home/tliaudat/.local/bin/shapepipe_run.py -c $CONFDIR/jobs/testing_jobs/pipe_config_real_SNR/pipe_deep_mccd_high_den_U32.ini
+
 
 # Return exit code
 exit 0
