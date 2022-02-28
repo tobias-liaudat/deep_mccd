@@ -9,6 +9,8 @@ Defines the preprocessing functions that will be used to train the model.
 import numpy as np
 import tensorflow as tf
 from astropy.io import fits
+import galsim as gs
+import itertools
 
 def mad(x):
     r"""Compute an estimation of the standard deviation 
@@ -86,6 +88,13 @@ def eigenPSF_data_gen(
     n_shuffle=50,
     noise_estimator=True,
     enhance_noise=False,
+    add_parametric_data=False,
+    star_ratio=0.5,
+    e1_range=[-0.15, 0.15],
+    e2_range=[-0.15, 0.15],
+    fwhm_range=[0.5, 1.],
+    pix_scale = 0.187,
+    beta_psf = 4.765,
 ):
     """ Dataset generator of eigen-PSFs.
 
@@ -111,7 +120,21 @@ def eigenPSF_data_gen(
     enhance_noise: bool
         If True the noise distribution will be skewed for more noisy values
         insterad of being flat in the SNR range.
-
+    add_parametric_data: bool
+        Option to add parametric dataset.
+    star_ratio: float
+        Ratio of parametric samples on final samples.
+    e1_range: (list of) float
+        Range of e1 variation.
+    e2_range: (list of) float
+        Range of e2 variation.
+    fwhm_range: (list of) float
+        Range of fwhm variation in arcsec.
+    pix_scale: float
+        Pixel scale for the parametric star simulation.
+    beta_psf: float
+        Beta parameter of the Moffat profile.
+        
     """
     # Verify the eigenPSFs are positive
     multiple = np.array([np.sum(im)>0 for im in data]) * 2. - 1.
@@ -119,11 +142,51 @@ def eigenPSF_data_gen(
     # Verify consistency
     if (data.shape[1] != img_shape[0]) or (data.shape[2] != img_shape[1]):
         raise ValueError
+        
+    # Create parametric dataset and concatenate with current dataset
+    if add_parametric_data:
+        eigen_num = data.shape[0]
+        _star_num = np.ceil(eigen_num * star_ratio / (1 - star_ratio)).astype(int)
+        var_num = np.ceil(np.power(_star_num, 1/3)).astype(int)
+        star_num = var_num**3
+        print('Total dataset: ',star_num+eigen_num, ', with eigenPSF ', eigen_num, ', and parametric stars ', star_num)
+        # Define the variations
+        e1 = np.linspace(e1_range[0], e1_range[1], num=var_num, endpoint=True)
+        e2 = np.linspace(e2_range[0], e2_range[1], num=var_num, endpoint=True)
+        fwhm = np.linspace(fwhm_range[0], fwhm_range[1],  num=var_num, endpoint=True)
+        # Build the datasets arrays
+        es = list(itertools.product(*[e1, e2, fwhm]))
+        e1s = np.array([a for a,b,c in es])
+        e2s = np.array([b for a,b,c in es]) 
+        fwhms = np.array([c for a,b,c in es])
+        # Fix PSF flux
+        psf_flux = 1.
+        # Create the array
+        parametric_data = np.zeros((star_num, img_shape[0], img_shape[1]))
+        
+        for it in range(star_num):
+            # PSF generation. Define size
+            psf = gs.Moffat(fwhm=fwhms[it], beta=beta_psf)
+            # Define the Flux
+            psf = psf.withFlux(psf_flux)
+            # Define the shear
+            psf = psf.shear(g1=e1s[it], g2=e2s[it])
+            # Draw the PSF on a vignet
+            image_epsf = gs.ImageF(img_shape[0], img_shape[1])
+            # Define intrapixel shift (uniform distribution in [-0.25,0.25])
+            rand_shift = (np.random.rand(2) - 0.5) / 2
+            psf.drawImage(image=image_epsf, offset=rand_shift, scale=pix_scale)
+            # Save images before adding the noise
+            parametric_data[it,:,:] = image_epsf.array
+            
+        # Concatenate the simulations to the input data
+        data = np.concatenate((data, parametric_data), axis=0)
+            
+    print('data.shape :', data.shape)
     # Expand last dimension
     data = np.reshape(data, (data.shape[0], img_shape[0], img_shape[1], 1))
     # Shuffle data
     np.random.shuffle(data)
-
     # Init dataset from file
     ds = tf.data.Dataset.from_tensor_slices(data)
     # Cast SNR range 
@@ -142,7 +205,7 @@ def eigenPSF_data_gen(
         lambda x: (add_noise_function(
             x,
             tf_snr_range,
-            tf_window,
+            tf_window, 
             noise_estimator=noise_estimator,
             enhance_noise=enhance_noise
         ), x),
@@ -154,6 +217,8 @@ def eigenPSF_data_gen(
     image_noisy_ds = image_noisy_ds.batch(batch_size)
     image_noisy_ds = image_noisy_ds.repeat().prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return image_noisy_ds
+
+
 
 
 
