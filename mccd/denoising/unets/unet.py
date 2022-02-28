@@ -1,20 +1,32 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, PReLU, UpSampling2D, MaxPooling2D, Activation
 from tensorflow.keras.models import Model
-
+from tensorflow_addons.layers import SpectralNormalization
 
 class Conv(Layer):
-    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', **kwargs):
+    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', spectral_normalization=False, **kwargs):
         super().__init__(**kwargs)
         self.n_filters = n_filters
         self.kernel_size = kernel_size
         self.non_linearity = non_linearity
-        self.conv = Conv2D(
-            filters=self.n_filters,
-            kernel_size=self.kernel_size,
-            padding='same',
-            activation=None,
-        )
+        self.spectral_normalization = spectral_normalization
+        if self.spectral_normalization:
+            self.conv = SpectralNormalization(
+                Conv2D(
+                    filters=self.n_filters,
+                    kernel_size=self.kernel_size,
+                    padding='same',
+                    activation=None,
+                ),
+                power_iterations=10,
+            )
+        else:
+            self.conv = Conv2D(
+                filters=self.n_filters,
+                kernel_size=self.kernel_size,
+                padding='same',
+                activation=None,
+            )
         if self.non_linearity == 'lrelu':
             self.act = LeakyReLU(0.1)
         elif self.non_linearity == 'prelu':
@@ -28,17 +40,19 @@ class Conv(Layer):
         return outputs
 
 class ConvBlock(Layer):
-    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', n_non_lins=2, **kwargs):
+    def __init__(self, n_filters, kernel_size=3, non_linearity='relu', n_non_lins=2, spectral_normalization=False, **kwargs):
         super().__init__(**kwargs)
         self.n_filters = n_filters
         self.kernel_size = kernel_size
         self.non_linearity = non_linearity
         self.n_non_lins = n_non_lins
+        self.spectral_normalization = spectral_normalization
         self.convs = [
             Conv(
                 n_filters=self.n_filters,
                 kernel_size=self.kernel_size,
                 non_linearity=self.non_linearity,
+                spectral_normalization=self.spectral_normalization,
             ) for _ in range(self.n_non_lins)
         ]
 
@@ -49,16 +63,28 @@ class ConvBlock(Layer):
         return outputs
 
 class UpConv(Layer):
-    def __init__(self, n_filters, kernel_size=3, **kwargs):
+    def __init__(self, n_filters, kernel_size=3, spectral_normalization=False, **kwargs):
         super().__init__(**kwargs)
         self.n_filters = n_filters
         self.kernel_size = kernel_size
-        self.conv = Conv2D(
-            filters=self.n_filters,
-            kernel_size=self.kernel_size,
-            padding='same',
-            activation=None,
-        )
+        self.spectral_normalization = spectral_normalization
+        if self.spectral_normalization:
+            self.conv = SpectralNormalization(
+                Conv2D(
+                    filters=self.n_filters,
+                    kernel_size=self.kernel_size,
+                    padding='same',
+                    activation=None,
+                ),
+                power_iterations=10,
+            )
+        else:
+            self.conv = Conv2D(
+                filters=self.n_filters,
+                kernel_size=self.kernel_size,
+                padding='same',
+                activation=None,
+            )
         self.up = UpSampling2D(size=(2, 2))
 
     def call(self, inputs):
@@ -75,6 +101,7 @@ class Unet(Model):
             layers_n_channels=[64, 128, 256, 512, 1024],
             layers_n_non_lins=2,
             non_linearity='relu',
+            spectral_normalization=False,
             **kwargs,
         ):
         super().__init__(**kwargs)
@@ -82,6 +109,7 @@ class Unet(Model):
         self.kernel_size = kernel_size
         self.layers_n_channels = layers_n_channels
         self.n_layers = len(self.layers_n_channels)
+        self.spectral_normalization = spectral_normalization
         self.layers_n_non_lins = layers_n_non_lins
         self.non_linearity = non_linearity
         self.down_convs = [
@@ -90,6 +118,7 @@ class Unet(Model):
                 kernel_size=self.kernel_size,
                 non_linearity=self.non_linearity,
                 n_non_lins=self.layers_n_non_lins,
+                spectral_normalization=self.spectral_normalization,
             ) for n_channels in self.layers_n_channels[:-1]
         ]
         self.down = MaxPooling2D(pool_size=(2, 2), padding='same')
@@ -98,6 +127,7 @@ class Unet(Model):
             kernel_size=self.kernel_size,
             non_linearity=self.non_linearity,
             n_non_lins=self.layers_n_non_lins,
+            spectral_normalization=self.spectral_normalization,
         )
         self.up_convs = [
             ConvBlock(
@@ -105,20 +135,33 @@ class Unet(Model):
                 kernel_size=self.kernel_size,
                 non_linearity=self.non_linearity,
                 n_non_lins=self.layers_n_non_lins,
+                spectral_normalization=self.spectral_normalization,
             ) for n_channels in self.layers_n_channels[:-1]
         ]
         self.ups = [
             UpConv(
                 n_filters=n_channels,
                 kernel_size=self.kernel_size,
+                spectral_normalization=self.spectral_normalization,
             ) for n_channels in self.layers_n_channels[:-1]
         ]
-        self.final_conv = Conv2D(
-            filters=self.n_output_channels,
-            kernel_size=1,
-            padding='same',
-            activation=None,
-        )
+        if self.spectral_normalization:            
+            self.final_conv = SpectralNormalization(
+                Conv2D(
+                    filters=self.n_output_channels,
+                    kernel_size=1,
+                    padding='same',
+                    activation=None,
+                ),
+                power_iterations=10,
+            )    
+        else:
+            self.final_conv = Conv2D(
+                filters=self.n_output_channels,
+                kernel_size=1,
+                padding='same',
+                activation=None,
+            )
         
     def pad(self, image):
         r"""Convert images to 64x64x1 shaped tensors to feed the model, using zero-padding."""
