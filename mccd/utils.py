@@ -15,6 +15,7 @@ import scipy.signal as scisig
 import numpy as np
 from modopt.signal.wavelet import filter_convolve
 import galsim as gs
+import matplotlib.pyplot as plt
 
 
 def butterworth_2d_filter(im_shape, order, cut_dist):
@@ -950,3 +951,49 @@ class NoiseEstimator(object):
 
         # Calculate noise std dev
         return self.sigma_mad(image[self.window])
+
+def plot_imgs(mat, cmap = 'gist_stern', figsize=(20,20)):
+    """ Function to plot 2D images of a tensor.
+    The Tensor is (batch,xdim,ydim) and the matrix of subplots is
+    chosen "intelligently".
+    """
+    def dp(n, left): # returns tuple (cost, [factors])
+        memo = {}
+        if (n, left) in memo: return memo[(n, left)]
+
+        if left == 1:
+            return (n, [n])
+
+        i = 2
+        best = n
+        bestTuple = [n]
+        while i * i <= n:
+            if n % i == 0:
+                rem = dp(n / i, left - 1)
+                if rem[0] + i < best:
+                    best = rem[0] + i
+                    bestTuple = [i] + rem[1]
+            i += 1
+
+        memo[(n, left)] = (best, bestTuple)
+        return memo[(n, left)]
+
+
+    n_images = mat.shape[0]
+    row_col = dp(n_images, 2)[1]
+    row_n = int(row_col[0])
+    col_n = int(row_col[1])
+
+    plt.figure(figsize=figsize)
+    idx = 0
+
+    for _i in range(row_n):
+        for _j in range(col_n):
+
+            plt.subplot(row_n,col_n,idx+1)
+            plt.imshow(mat[idx,:,:], cmap=cmap);plt.colorbar()
+            plt.title('matrix id %d'%idx)
+
+            idx += 1
+
+    plt.show()
