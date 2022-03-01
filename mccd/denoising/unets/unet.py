@@ -106,7 +106,7 @@ class Unet(Model):
             layers_n_non_lins=2,
             non_linearity='relu',
             spectral_normalization=False,
-            power_iterations=5,
+            power_iterations=1,
             **kwargs,
         ):
         super().__init__(**kwargs)
