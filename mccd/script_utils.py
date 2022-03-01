@@ -25,6 +25,10 @@ def init_learnlets(weights_path, **args):
     # Learnlet parameters
     run_params = {
         'denoising_activation': 'dynamic_soft_thresholding',
+        'n_scales': args['n_scales'],
+        'n_reweights_learn': 1,
+        'clip': False,
+        'normalize': True,
         'learnlet_analysis_kwargs':{
             'n_tiling': args['n_tiling'],
             'mixing_details': False,
@@ -36,9 +40,6 @@ def init_learnlets(weights_path, **args):
         'threshold_kwargs':{
             'noise_std_norm': True,
         },
-        'n_scales': args['n_scales'],
-        'n_reweights_learn': 1,
-        'clip': False,
     }
 
     # Create fake data to init the model
@@ -115,6 +116,10 @@ def train_learnlets(**args):
     # Learnlet parameters
     run_params = {
         'denoising_activation': 'dynamic_soft_thresholding',
+        'n_scales': args['n_scales'],
+        'n_reweights_learn': 1,
+        'clip': False,
+        'normalize': True,
         'learnlet_analysis_kwargs':{
             'n_tiling': args['n_tiling'],
             'mixing_details': False,
@@ -126,10 +131,6 @@ def train_learnlets(**args):
         'threshold_kwargs':{
             'noise_std_norm': True,
         },
-    #     'wav_type': 'bior',
-        'n_scales': args['n_scales'],
-        'n_reweights_learn': 1,
-        'clip': False,
     }
 
     # Save output prints to logfile
@@ -156,7 +157,14 @@ def train_learnlets(**args):
         img_shape=(51, 51),
         batch_size=batch_size,
         n_shuffle=args['n_shuffle'],
-        enhance_noise=args['enhance_noise']
+        enhance_noise=args['enhance_noise'],
+        add_parametric_data=args['add_parametric_data'],
+        star_ratio=args['star_ratio'],
+        e1_range=args['e1_range'], 
+        e2_range=args['e2_range'],
+        fwhm_range=args['fwhm_range'],
+        pix_scale=args['pix_scale'],
+        beta_psf=args['beta_psf'],
     )
 
     test = eigenPSF_data_gen(
@@ -164,7 +172,14 @@ def train_learnlets(**args):
         snr_range=args['snr_range'], #[1e-3, 50],
         img_shape=(51, 51),
         batch_size=1,
-        enhance_noise=args['enhance_noise']
+        enhance_noise=args['enhance_noise'],
+        add_parametric_data=args['add_parametric_data'],
+        star_ratio=args['star_ratio'],
+        e1_range=args['e1_range'], 
+        e2_range=args['e2_range'],
+        fwhm_range=args['fwhm_range'],
+        pix_scale=args['pix_scale'],
+        beta_psf=args['beta_psf'],
     )
 
 
@@ -281,7 +296,14 @@ def train_unets(**args):
         batch_size=batch_size,
         n_shuffle=args['n_shuffle'],
         noise_estimator=False,
-        enhance_noise=args['enhance_noise']
+        enhance_noise=args['enhance_noise'],
+        add_parametric_data=args['add_parametric_data'],
+        star_ratio=args['star_ratio'],
+        e1_range=args['e1_range'], 
+        e2_range=args['e2_range'],
+        fwhm_range=args['fwhm_range'],
+        pix_scale=args['pix_scale'],
+        beta_psf=args['beta_psf'],
     )
 
     test = eigenPSF_data_gen(
@@ -290,19 +312,31 @@ def train_unets(**args):
         img_shape=(51, 51),
         batch_size=1,
         noise_estimator=False,
-        enhance_noise=args['enhance_noise']
+        enhance_noise=args['enhance_noise'],
+        add_parametric_data=args['add_parametric_data'],
+        star_ratio=args['star_ratio'],
+        e1_range=args['e1_range'], 
+        e2_range=args['e2_range'],
+        fwhm_range=args['fwhm_range'],
+        pix_scale=args['pix_scale'],
+        beta_psf=args['beta_psf'],
     )
 
     steps = int(size_train/batch_size)
 
     # Increasing the filter number with a factor of 2
-    layers_n_channels = [args['layers_n_channel'] * (2**it) for it in range(args['layers_levels'])]
+    layers_n_channels = [
+        args['layers_n_channel'] * (2**it) 
+        for it in range(args['layers_levels'])
+    ]
     print('layers_n_channels: ', layers_n_channels)
 
     model = Unet(
         n_output_channels=1,
         kernel_size=args['kernel_size'],
-        layers_n_channels=layers_n_channels
+        layers_n_channels=layers_n_channels,
+        spectral_normalization=args['spectral_normalization'],
+        power_iterations=args['power_iterations'],
     )    
 
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
