@@ -26,7 +26,10 @@ from scipy.interpolate import Rbf
 import galsim.hsm as hsm
 from galsim import Image
 import mccd.utils as utils
-from pysap import load_transform
+try:
+    from pysap import load_transform
+except:
+    print('pysap load failed.')
 
 
 def find_ccd_idx(ccd_id, ccd_list):
