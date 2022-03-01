@@ -41,12 +41,7 @@ import click
     default=5,
     type=int,
     help="Number of scales for the Learnlet model.")
-# Training parameters
-@click.option(
-    "--use_lr_scheduler",
-    default=True,
-    type=bool,
-    help="Use learning rate scheduler.")
+# Dataset parameters
 @click.option(
     "--enhance_noise",
     default=False,
@@ -57,6 +52,61 @@ import click
     default=20,
     type=int,
     help="Shuffle number for the tensorflow datset.")
+@click.option(
+    "--data_train_ratio",
+    default=0.9,
+    type=float,
+    help="Ratio of the dataset used for training.")
+@click.option(
+    "--snr_range",
+    nargs=2,
+    default=[1e-3, 50],
+    type=float,
+    help="SNR range for the added noise.")
+@click.option(
+    "--add_parametric_data",
+    default=True,
+    type=bool,
+    help="Option to include parametric Moffat stars in the dataset.")
+@click.option(
+    "--star_ratio",
+    default=0.5,
+    type=float,
+    help="Ratio of parametric samples on final samples for the dataset used for training.")
+@click.option(
+    "--e1_range",
+    nargs=2,
+    default=[-0.15, 0.15],
+    type=float,
+    help="e1 range for the parametric star generation.")
+@click.option(
+    "--e2_range",
+    nargs=2,
+    default=[-0.15, 0.15],
+    type=float,
+    help="e2 range for the parametric star generation.")
+@click.option(
+    "--fwhm_range",
+    nargs=2,
+    default=[0.5, 1.0],
+    type=float,
+    help="fwhm range for the parametric star generation. In arcsec.")
+@click.option(
+    "--pix_scale",
+    default=0.187,
+    type=float,
+    help="Pixel scale for parametric star generation.")
+@click.option(
+    "--beta_psf",
+    default=4.765,
+    type=float,
+    help="Beta parameter of the Moffat profile for parametric star generation.")
+# Training parameters
+@click.option(
+    "--use_lr_scheduler",
+    default=True,
+    type=bool,
+    help="Use learning rate scheduler.")
 @click.option(
     "--batch_size",
     default=32,
@@ -72,17 +122,6 @@ import click
     default=1e-3,
     type=float,
     help="Learning rate.")
-@click.option(
-    "--data_train_ratio",
-    default=0.9,
-    type=float,
-    help="Ratio of the dataset used for training.")
-@click.option(
-    "--snr_range",
-    nargs=2,
-    default=[1e-3, 50],
-    type=float,
-    help="SNR range for the added noise.")
 
 
 def main(**args):
