@@ -856,16 +856,16 @@ class MCCD(object):
             local_denoise_prox = prox.ProxLearnlets(model=local_Learnlets)
             global_denoise_prox = prox.ProxLearnlets(model=global_Learnlets)
 
-        elif denoising_model == 'unet':
+        elif denoising_model == 'unet_32' or denoising_model == 'unet_64':
             # Build path
-            local_unet_path = unet_base_path.__path__[0] + '/cp_local_unet_32.h5'
-            global_unet_path = unet_base_path.__path__[0] + '/cp_global_unet_32.h5'
+            local_unet_path = unet_base_path.__path__[0] + '/cp_local_' + denoising_model + '.h5'
+            global_unet_path = unet_base_path.__path__[0] + '/cp_global_' + denoising_model + '.h5'
             # Load param dicts
             local_params = np.load(
-                unet_base_path.__path__[0] + '/params_local_unet_32.npy', allow_pickle=True
+                unet_base_path.__path__[0] + '/params_local_' + denoising_model + '.npy', allow_pickle=True
             )[()]
             global_params = np.load(
-                unet_base_path.__path__[0] + '/params_global_unet_32.npy', allow_pickle=True
+                unet_base_path.__path__[0] + '/params_global_' + denoising_model + '.npy', allow_pickle=True
             )[()]
             # Init models
             local_unets = script_utils.init_unets(local_unet_path, **local_params)
