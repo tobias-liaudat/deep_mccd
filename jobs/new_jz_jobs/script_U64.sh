@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=train_U32    # nom du job
+#SBATCH --job-name=train_U64    # nom du job
 ##SBATCH --partition=gpu_p2          # de-commente pour la partition gpu_p2
 #SBATCH --ntasks=1                   # nombre total de tache MPI (= nombre total de GPU)
 #SBATCH --ntasks-per-node=1          # nombre de tache MPI par noeud (= nombre de GPU par noeud)
@@ -9,8 +9,8 @@
 # /!\ Attention, "multithread" fait reference a l'hyperthreading dans la terminologie Slurm
 #SBATCH --hint=nomultithread         # hyperthreading desactive
 #SBATCH --time=100:00:00              # temps d'execution maximum demande (HH:MM:SS)
-#SBATCH --output=train_U32_%j.out  # nom du fichier de sortie
-#SBATCH --error=train_U32_%j.err   # nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH --output=train_U64_%j.out  # nom du fichier de sortie
+#SBATCH --error=train_U64_%j.err   # nom du fichier d'erreur (ici commun avec la sortie)
 #SBATCH -A ynx@gpu                   # specify the project
 ##SBATCH --qos=qos_gpu-dev            # using the dev queue, as this is only for profiling
 #SBATCH --qos=qos_gpu-t4              # We need a long run
@@ -27,15 +27,15 @@ set -x
 
 cd $WORK/repo/deep_mccd/scripts/
 
-opt[0]="--run_id_name global_enhanced_U32 --n_epochs 500 --enhance_noise True --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/global_eigenpsfs.fits"
-opt[1]="--run_id_name global_flat_U32 --n_epochs 500 --enhance_noise False --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/global_eigenpsfs.fits"
-opt[2]="--run_id_name local_enhanced_U32 --n_epochs 150 --enhance_noise True --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/filtered_local_eigenpsfs.fits"
-opt[3]="--run_id_name local_flat_U32 --n_epochs 150 --enhance_noise False --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/filtered_local_eigenpsfs.fits"
+opt[0]="--run_id_name global_enhanced_U64 --n_epochs 500 --enhance_noise True --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/global_eigenpsfs.fits"
+opt[1]="--run_id_name global_flat_U64 --n_epochs 500 --enhance_noise False --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/global_eigenpsfs.fits"
+opt[2]="--run_id_name local_enhanced_U64 --n_epochs 200 --enhance_noise True --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/filtered_local_eigenpsfs.fits"
+opt[3]="--run_id_name local_flat_U64 --n_epochs 200 --enhance_noise False --dataset_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/eigenpsf_datasets/filtered_local_eigenpsfs.fits"
 
 
 srun python -u training_unets.py \
-    --base_save_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/trained_models/testing_models/U32/ \
-    --layers_n_channel 32 \
+    --base_save_path /gpfswork/rech/ynx/ulx23va/deep_mccd_project/trained_models/testing_models/U64/ \
+    --layers_n_channel 64 \
     --layers_levels 5 \
     --kernel_size 3 \
     --spectral_normalization True \
