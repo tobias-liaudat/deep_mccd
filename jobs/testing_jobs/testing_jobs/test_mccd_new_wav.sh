@@ -13,7 +13,7 @@
 # Set maximum computing time (e.g. 5min)
 #PBS -l walltime=95:00:00
 # Request number of cores
-#PBS -l nodes=n01:ppn=6
+#PBS -l nodes=n01:ppn=3
 
 # Full path to environment
 export SPENV="$HOME/.conda/envs/shapepipe"
