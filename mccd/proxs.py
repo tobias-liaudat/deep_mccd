@@ -364,6 +364,54 @@ class ProxUnets(ProximityParent):
         return 0
 
 
+class WaveletDenoising(ProximityParent):
+    r"""Apply soft thresholding in wavelet(default Starlet) domain.
+    
+    This amounts as a soft thresholding in wavelet(default Starlet) domain.
+
+    Parameters
+    ----------
+    Phi_filters: numpy.ndarray
+        Wavelet filters.
+    threshold: numpy.ndarray
+        Threshold levels.
+    thresh_type: str
+        Whether soft- or hard-thresholding should be used.
+        Default is ``soft``.
+    """
+
+    def __init__(self, Phi_filters, threshold, thresh_type='soft'):
+        r"""Initialize class attributes."""
+        self.Phi_filters = Phi_filters
+        self.threshold = threshold
+        self._thresh_type = thresh_type
+
+    def update_threshold(self, new_threshold, new_thresh_type=None):
+        r"""Update starlet threshold."""
+        self.threshold = new_threshold
+        if new_thresh_type in ['soft', 'hard']:
+            self._thresh_type = new_thresh_type
+
+    def op(self, data, **kwargs):
+        r"""Apply wavelet transform and perform thresholding."""
+        # Transform the data into teh wavelet sapce
+        transf_data = utils.apply_transform(data, self.Phi_filters)
+        # Threshold all scales but the coarse
+        transf_data[:, :-1] = utils.SoftThresholding(
+            transf_data[:, :-1],
+            self.threshold[:, :-1]
+        )
+        # Come back to the original domain
+        data = np.array([
+            filter_convolve(transf_Sj, self.Phi_filters, filter_rot=True)
+            for transf_Sj in transf_data
+        ])
+        return utils.rca_format(data)
+
+    def cost(self, x, y):
+        r"""Return cost."""
+        return 0
+
 class OLD_Learnlets(ProximityParent):
     r"""Apply Learnlets denoising.
 
